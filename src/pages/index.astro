@@ -1,0 +1,26 @@
+---
+// Racine du site : redirige vers la langue du navigateur (repli : français).
+import { langs, defaultLang, languages } from '../i18n/ui';
+import { withBase, basePath } from '../lib/paths';
+---
+
+<!doctype html>
+<html lang={defaultLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carte des origines</title>
+    {langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(withBase(`/${l}/`), Astro.site)} />)}
+    <script is:inline define:vars={{ langs, defaultLang, basePath }}>
+      const wanted = (navigator.languages || [navigator.language]).map((l) => l.slice(0, 2).toLowerCase());
+      const lang = wanted.find((l) => langs.includes(l)) || defaultLang;
+      location.replace(`${basePath}/${lang}/${location.hash}`);
+    </script>
+    <noscript><meta http-equiv="refresh" content={`0; url=${withBase(`/${defaultLang}/`)}`} /></noscript>
+  </head>
+  <body>
+    <ul>
+      {langs.map((l) => <li><a href={withBase(`/${l}/`)} hreflang={l}>{languages[l]}</a></li>)}
+    </ul>
+  </body>
+</html>

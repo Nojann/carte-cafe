@@ -1,0 +1,175 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import WorldMap from '../../components/WorldMap.astro';
+import CoffeeSheet from '../../components/CoffeeSheet.astro';
+import { getCafes, countryName, buyUrl } from '../../lib/cafes';
+import { languages, langs, useTranslations, type Lang } from '../../i18n/ui';
+import { site } from '../../site.config';
+import { withBase } from '../../lib/paths';
+
+export function getStaticPaths() {
+  return langs.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const cafes = await getCafes();
+const countries = new Set(cafes.map((c) => c.pays)).size;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: t('map.title'),
+  itemListElement: cafes.map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'Product',
+      name: c.nom[lang],
+      description: c.histoire?.[lang] ?? c.notes[lang].join(', '),
+      brand: { '@type': 'Brand', name: site.brand },
+      countryOfOrigin: countryName(c.pays, lang),
+      ...(c.prix && {
+        offers: {
+          '@type': 'Offer',
+          price: c.prix.montant,
+          priceCurrency: c.prix.devise,
+          availability: `https://schema.org/${c.disponible ? 'InStock' : 'OutOfStock'}`,
+          url: c.lien[lang],
+        },
+      }),
+    },
+  })),
+};
+---
+
+<Layout lang={lang} title={t('meta.title')} description={t('meta.description')}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="top">
+    <header class="topbar wrap">
+      <a class="brand" href={withBase(`/${lang}/`)}>{site.brand}</a>
+      <nav class="topbar__nav" aria-label="Navigation">
+        <a href="#carte">{t('nav.map')}</a>
+        <a href="#demarche">{t('nav.approach')}</a>
+        <a href={site.shopUrl[lang]}>{t('nav.shop')}</a>
+      </nav>
+      <nav class="langs" aria-label={t('nav.language')}>
+        {
+          langs.map((l) => (
+            <a href={withBase(`/${l}/`)} hreflang={l} lang={l} data-lang-link aria-current={l === lang ? 'true' : undefined}>
+              <abbr title={languages[l]}>{l.toUpperCase()}</abbr>
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    <section class="hero wrap">
+      <p class="eyebrow"><span>{t('hero.eyebrow')}</span></p>
+      <h1 class="hero__title">
+        {t('hero.title.a')} <em>{t('hero.title.b')}</em>
+      </h1>
+      <div class="hero__foot">
+        <p class="hero__subtitle">{t('hero.subtitle')}</p>
+        <a class="btn btn--big" href="#carte">{t('hero.cta')} <span aria-hidden="true">↓</span></a>
+      </div>
+    </section>
+  </div>
+
+
+  <main>
+    <section class="explorer" id="carte" aria-labelledby="carte-title" data-explorer>
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="carte-title" class="display">{t('map.title')}</h2>
+          <p class="pill">{t('map.count', { n: cafes.length, c: countries })}</p>
+        </div>
+
+        <div class="explorer__body">
+          <div class="explorer__map">
+            <WorldMap lang={lang} cafes={cafes} />
+          </div>
+
+          <div class="explorer__panel" aria-live="polite" data-panel>
+            <p class="explorer__hint" data-hint>{t('map.hint')}</p>
+            {
+              cafes.map((cafe, i) => (
+                <CoffeeSheet
+                  lang={lang}
+                  cafe={cafe}
+                  prev={cafes[(i - 1 + cafes.length) % cafes.length]}
+                  next={cafes[(i + 1) % cafes.length]}
+                />
+              ))
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="catalog" aria-labelledby="catalog-title">
+      <div class="wrap">
+        <h2 id="catalog-title" class="display">{t('list.title')}</h2>
+        <ul class="cards">
+          {
+            cafes.map((c) => (
+              <li class:list={['card', { 'is-soldout': !c.disponible }]} data-card={c.slug}>
+                <p class="card__origin">{countryName(c.pays, lang)} · {c.region[lang]}</p>
+                <h3 class="card__title">{c.nom[lang]}</h3>
+                <p class="card__notes">{c.notes[lang].join(' · ')}</p>
+                <div class="card__actions">
+                  <a href={`#${c.slug}`} data-show={c.slug} class="link">
+                    {t('list.show')}
+                  </a>
+                  {c.disponible ? (
+                    <a href={buyUrl(c, lang)} class="link link--strong" data-buy={c.slug}>
+                      {t('sheet.buy')}
+                    </a>
+                  ) : (
+                    <span class="badge badge--soldout">{t('sheet.soldOut')}</span>
+                  )}
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="approach" id="demarche" aria-labelledby="demarche-title">
+      <div class="wrap">
+        <h2 id="demarche-title" class="display">{t('approach.title')}</h2>
+        <div class="approach__grid">
+          {
+            ([1, 2, 3] as const).map((i) => (
+              <div class="approach__item">
+                <span class="approach__num" aria-hidden="true">0{i}</span>
+                <h3>{t(`approach.${i}.title`)}</h3>
+                <p>{t(`approach.${i}.text`)}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <p class="brand">{site.brand}</p>
+      <ul>
+        <li><a href={site.shopUrl[lang]}>{t('nav.shop')}</a></li>
+        <li><a href={`mailto:${site.contactEmail}`}>{t('footer.contact')}</a></li>
+        <li><a href={site.instagram}>Instagram</a></li>
+        <li><a href="#">{t('footer.legal')}</a></li>
+      </ul>
+      <p class="small">{t('footer.examples')}</p>
+    </div>
+  </footer>
+
+  <script>
+    import { initExplorer } from '../../scripts/explorer';
+    initExplorer();
+  </script>
+</Layout>

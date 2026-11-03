@@ -1,0 +1,107 @@
+---
+import { buildMap } from '../lib/map';
+import { countryName, type Cafe } from '../lib/cafes';
+import { useTranslations, type Lang } from '../i18n/ui';
+import { site } from '../site.config';
+
+interface Props {
+  lang: Lang;
+  cafes: Cafe[];
+}
+const { lang, cafes } = Astro.props;
+const t = useTranslations(lang);
+
+const map = buildMap(
+  cafes.map((c) => c.pays),
+  cafes.map((c) => ({ slug: c.slug, ...c.coordonnees })),
+  site.roastery,
+);
+const bySlug = new Map(cafes.map((c) => [c.slug, c]));
+---
+
+<div class="map" data-map>
+  <div class="map__stage" data-stage style={`aspect-ratio: ${map.width} / ${map.height}`}>
+    <svg
+      class="map__svg"
+      viewBox={`0 0 ${map.width} ${map.height}`}
+      role="img"
+      aria-label={t('map.label')}
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <defs>
+        <clipPath id="sphere"><path d={map.outline} /></clipPath>
+        {
+          map.routes.map((r) => (
+            <mask id={`reveal-${r.slug}`} maskUnits="userSpaceOnUse" x="0" y="0" width={map.width} height={map.height}>
+              <path d={r.d} class="route__reveal" data-reveal={r.slug} pathLength="1" />
+            </mask>
+          ))
+        }
+      </defs>
+      <path class="map__ocean" d={map.outline} />
+      <g clip-path="url(#sphere)">
+        <rect class="map__belt" x="0" y={map.belt.y} width={map.width} height={map.belt.h} />
+        <path class="map__graticule" d={map.graticule} />
+      </g>
+      <g class="map__countries">
+        {map.shapes.map((s) => <path d={s.d} class:list={['map__country', { 'is-origin': s.origin }]} />)}
+      </g>
+      <g class="routes" aria-hidden="true">
+        {map.routes.map((r) => <path d={r.d} class="route" data-route={r.slug} mask={`url(#reveal-${r.slug})`} />)}
+        <g class="ship" data-ship>
+          <g class="ship__body" transform="scale(1.7)">
+            <path d="M-8,0.5 L7,0.5 L9.5,-2 L9.5,1.2 L7,3.5 L-6.5,3.5 Z" />
+            <rect x="-5.5" y="-2.8" width="3.4" height="3" rx="0.4" />
+            <rect x="-1.6" y="-2.8" width="3.4" height="3" rx="0.4" />
+            <rect x="2.3" y="-2.8" width="3.4" height="3" rx="0.4" />
+            <rect x="-7.5" y="-5" width="2.4" height="5.2" rx="0.4" />
+          </g>
+        </g>
+      </g>
+      <text class="map__belt-label" x="12" y={map.belt.y + 16}>{t('map.belt')}</text>
+    </svg>
+
+    {
+      map.markers.map((m) => {
+        const cafe = bySlug.get(m.slug)!;
+        return (
+          <a
+            href={`#${m.slug}`}
+            class:list={['marker', { 'is-soldout': !cafe.disponible }]}
+            style={`left:${m.xPct.toFixed(3)}%;top:${m.yPct.toFixed(3)}%`}
+            data-marker={m.slug}
+            data-x={m.xPct.toFixed(3)}
+            data-y={m.yPct.toFixed(3)}
+            aria-controls={`cafe-${m.slug}`}
+          >
+            <span class="marker__dot" aria-hidden="true" />
+            <span class="marker__label">
+              <strong>{cafe.nom[lang]}</strong>
+              <span>
+                {countryName(cafe.pays, lang)}
+                {!cafe.disponible && ` · ${t('sheet.soldOut')}`}
+              </span>
+            </span>
+          </a>
+        );
+      })
+    }
+
+    <span
+      class="destination"
+      data-destination
+      style={`left:${map.destination.xPct.toFixed(3)}%;top:${map.destination.yPct.toFixed(3)}%`}
+    >
+      <span class="destination__dot" aria-hidden="true"></span>
+      <span class="destination__label">{t('map.roastery', { city: site.roastery.name })}</span>
+    </span>
+  </div>
+
+  <button type="button" class="map__world" data-world hidden>
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+      <path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18" fill="none" stroke="currentColor" stroke-width="2" />
+    </svg>
+    {t('map.world')}
+  </button>
+</div>

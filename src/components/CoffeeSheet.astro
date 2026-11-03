@@ -1,0 +1,125 @@
+---
+import {
+  buyUrl,
+  countryName,
+  flagDataUri,
+  formatAltitude,
+  formatDistance,
+  formatPrice,
+  photoExists,
+  type Cafe,
+} from '../lib/cafes';
+import { site } from '../site.config';
+import { withBase } from '../lib/paths';
+import { useTranslations, type Lang, type UIKey } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  cafe: Cafe;
+  prev: Cafe;
+  next: Cafe;
+}
+const { lang, cafe, prev, next } = Astro.props;
+const t = useTranslations(lang);
+const photo = cafe.photos[0];
+const hasPhoto = photoExists(photo.src);
+
+const details: [string, string | undefined][] = [
+  [t('sheet.producer'), cafe.producteur],
+  [t('sheet.altitude'), cafe.altitude && formatAltitude(cafe.altitude, lang)],
+  [t('sheet.varieties'), cafe.varietes?.join(', ')],
+  [t('sheet.process'), cafe.process && t(`process.${cafe.process}`)],
+  [t('sheet.harvest'), cafe.recolte],
+  [t('sheet.distance', { city: site.roastery.name }), formatDistance(cafe, lang)],
+];
+const profile: [UIKey, number][] = cafe.profil
+  ? [
+      ['sheet.acidity', cafe.profil.acidite],
+      ['sheet.body', cafe.profil.corps],
+      ['sheet.sweetness', cafe.profil.douceur],
+    ]
+  : [];
+---
+
+<article class="sheet" id={`cafe-${cafe.slug}`} data-sheet={cafe.slug} aria-labelledby={`title-${cafe.slug}`}>
+  <span class="anchor" id={cafe.slug}></span>
+  <div class="sheet__bar">
+    <a class="icon-btn" href={`#${prev.slug}`} data-goto={prev.slug} aria-label={`${t('sheet.prev')} : ${prev.nom[lang]}`}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+    </a>
+    <a class="icon-btn" href={`#${next.slug}`} data-goto={next.slug} aria-label={`${t('sheet.next')} : ${next.nom[lang]}`}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+    </a>
+    <button type="button" class="icon-btn sheet__close" data-close aria-label={t('sheet.close')}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+  </div>
+
+  <figure class="sheet__photo">
+    {
+      hasPhoto ? (
+        <img src={withBase(photo.src)} alt={photo.alt[lang]} loading="lazy" decoding="async" width="800" height="500" />
+      ) : (
+        <div class="sheet__placeholder" role="img" aria-label={photo.alt[lang]}>
+          <img src={flagDataUri(cafe.pays)} alt="" width="800" height="600" />
+        </div>
+      )
+    }
+    {!cafe.disponible && <span class="badge badge--soldout">{t('sheet.soldOut')}</span>}
+  </figure>
+
+  <header class="sheet__header">
+    <p class="sheet__origin">{countryName(cafe.pays, lang)} · {cafe.region[lang]}</p>
+    <h3 class="sheet__title" id={`title-${cafe.slug}`} tabindex="-1">{cafe.nom[lang]}</h3>
+  </header>
+
+  <ul class="tags" aria-label={t('sheet.notes')}>
+    {cafe.notes[lang].map((n) => <li>{n}</li>)}
+  </ul>
+
+  {cafe.histoire && <p class="sheet__story">{cafe.histoire[lang]}</p>}
+
+  <dl class="facts">
+    {
+      details
+        .filter(([, v]) => v)
+        .map(([k, v]) => (
+          <div>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))
+    }
+  </dl>
+
+  {
+    profile.length > 0 && (
+      <div class="profile">
+        <h4>{t('sheet.profile')}</h4>
+        {profile.map(([k, v]) => (
+          <div class="profile__row">
+            <span>{t(k)}</span>
+            <span class="profile__dots" role="img" aria-label={`${t(k)} : ${t('sheet.outOf5', { v })}`}>
+              {[1, 2, 3, 4, 5].map((i) => (
+                <i class:list={{ on: i <= v }} />
+              ))}
+            </span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  <div class="sheet__buy">
+    {
+      cafe.prix && (
+        <p class="price">
+          <strong>{formatPrice(cafe.prix, lang)}</strong> {t('sheet.per', { g: cafe.prix.poids_g })}
+        </p>
+      )
+    }
+    <a class:list={['btn', { 'btn--ghost': !cafe.disponible }]} href={buyUrl(cafe, lang)} data-buy={cafe.slug}>
+      {cafe.disponible ? t('sheet.buy') : t('sheet.soldOutCta')}
+    </a>
+  </div>
+</article>

@@ -1,0 +1,39 @@
+---
+import '@fontsource-variable/bricolage-grotesque';
+import '../styles/global.css';
+import { langs, type Lang } from '../i18n/ui';
+import { withBase } from '../lib/paths';
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+}
+const { lang, title, description } = Astro.props;
+const canonical = new URL(withBase(`/${lang}/`), Astro.site);
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(withBase(`/${l}/`), Astro.site)} />)}
+    <link rel="alternate" hreflang="x-default" href={new URL(withBase('/'), Astro.site)} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={{ fr: 'fr_FR', en: 'en_GB', es: 'es_ES' }[lang]} />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <meta name="theme-color" content="#FFC800" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
