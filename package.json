@@ -25,5 +25,8 @@
     "@types/topojson-client": "^3.1.5",
     "@types/topojson-specification": "^1.0.5",
     "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=22.23.4"
   }
 }
