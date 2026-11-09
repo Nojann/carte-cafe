@@ -80,6 +80,14 @@ a { color: inherit; }
 }
 .icon-btn:hover { background: var(--yellow); transform: translate(-1px, -1px); }
 .icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.chip-btn {
+  display: inline-flex; align-items: center; gap: 0.3em; height: 2.5rem; padding: 0 0.95em 0 0.6em; border-radius: 999px;
+  border: var(--border); background: var(--green); color: var(--ink); font-weight: 800; font-size: 0.9rem; text-decoration: none;
+  box-shadow: 2px 2px 0 var(--ink); transition: transform 0.15s, background 0.15s;
+}
+.chip-btn:hover { background: var(--yellow); transform: translate(-1px, -1px); }
+.chip-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.pill--small { padding: 0.15em 0.7em; font-size: 0.8rem; box-shadow: none; border-width: 2px; vertical-align: middle; }
 
 /* ====== Haut de page (jaune plein) ====== */
 .top { background: var(--yellow); position: relative; overflow: hidden; border-bottom: var(--border); }
@@ -151,94 +159,189 @@ a { color: inherit; }
   .explorer__map { position: sticky; top: 1rem; }
 }
 
+/* La carte : planisphère + loupes. En desktop les loupes sont posées sur le monde,
+   en mobile (< 700 px) elles sont empilées sous un bandeau du monde. */
 .map {
-  position: relative; overflow: hidden; border-radius: var(--radius);
+  position: relative; border-radius: var(--radius); overflow: hidden;
   background: var(--blue); border: var(--border); box-shadow: 10px 10px 0 var(--yellow), 10px 10px 0 3px var(--ink);
 }
-.map__stage { position: relative; width: 100%; transform-origin: 0 0; transition: transform var(--zoom-duration) var(--ease); will-change: transform; }
+.map__symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
+.map__world { position: relative; width: 100%; }
 .map__svg { display: block; width: 100%; height: 100%; }
 .map__ocean { fill: var(--blue); }
-.map__belt { fill: var(--pink); opacity: 0.28; }
-.map__belt-label { font: 800 12px var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; fill: var(--white); transition: opacity 0.3s; }
-.has-selection .map__belt-label { opacity: 0; }
-.map__graticule { fill: none; stroke: #2a56c0; stroke-width: 0.6; vector-effect: non-scaling-stroke; }
-.map__country { fill: var(--land); stroke: var(--blue); stroke-width: 0.6; vector-effect: non-scaling-stroke; transition: fill 0.3s; }
-.map__country.is-origin { fill: var(--yellow); stroke: var(--ink); stroke-width: 1.2; }
+.map__graticule { fill: none; stroke: #2a56c0; stroke-width: 0.5; opacity: 0.6; }
+.map__country { fill: #d9cfb8; stroke: var(--blue); stroke-width: 0.5; opacity: 0.55; }
+.map__country.is-co { fill: var(--green); stroke: var(--ink); stroke-width: 1; opacity: 1; }
+.map__country.is-ch { fill: var(--red); stroke: var(--ink); stroke-width: 1; opacity: 1; }
+.map__leaders path { fill: none; stroke: var(--yellow); stroke-width: 1.5; stroke-dasharray: 2 4; stroke-linecap: round; }
 
-.map__world {
-  position: absolute; left: 0.85rem; bottom: 0.85rem;
+/* Loupes */
+.inset {
+  position: absolute; z-index: 1; display: flex; flex-direction: column;
+  background: var(--paper); border: var(--border); border-radius: 14px; box-shadow: 3px 3px 0 var(--ink);
+  overflow: hidden;
+}
+.inset__title {
+  position: absolute; top: 0.45rem; left: 0.6rem; z-index: 2; margin: 0; pointer-events: none;
+  font-size: clamp(0.75rem, 1.1vw, 0.85rem); font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 0.15em 0.55em; border-radius: 6px; background: var(--ink); color: var(--yellow);
+}
+.inset__view { position: relative; overflow: hidden; }
+.inset__stage { position: relative; width: 100%; transform-origin: 0 0; transition: transform var(--zoom-duration) var(--ease); will-change: transform; }
+.inset__svg { display: block; width: 100%; height: 100%; overflow: hidden; }
+.inset__view { background: #cfe0f3; } /* mer */
+.inset__neighbours path { fill: #e2e1dc; stroke: #b9b8b0; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.inset__outline { fill: var(--ink); stroke: var(--ink); stroke-width: 4; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.inset__departments path { fill: var(--land); stroke: #c9bc9c; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.inset__country { fill: var(--land); stroke: var(--ink); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+
+/* Consigne posée en bas de la loupe Colombie, jusqu'au premier choix */
+.inset__cue {
+  position: absolute; left: 50%; bottom: 0.5rem; z-index: 3; transform: translateX(-50%);
+  margin: 0; padding: 0.3em 0.8em; border-radius: 999px; border: 2px solid var(--ink);
+  background: var(--yellow); color: var(--ink); box-shadow: 2px 2px 0 var(--ink);
+  font-size: 0.75rem; font-weight: 800; line-height: 1.2; text-align: center; width: max-content; max-width: 90%;
+  pointer-events: none; transition: opacity 0.3s;
+}
+.has-explored .inset__cue { opacity: 0; }
+html:not(.js) .inset__cue { display: none; }
+
+/* Régions de Colombie (liens SVG) */
+.region path {
+  fill: var(--green); stroke: var(--ink); stroke-width: 1.5; vector-effect: non-scaling-stroke;
+  cursor: pointer; transition: fill 0.2s, opacity 0.3s;
+}
+.region:hover path, .region.is-hover path, .region:focus-visible path { fill: #00804f; }
+/* Une seule pulsation à l'arrivée pour montrer que les régions se cliquent (coupée si mouvement réduit) */
+.is-ready:not(.has-explored) .region path { animation: region-pulse 1.4s var(--ease) 0.6s 2; }
+@keyframes region-pulse { 50% { fill: var(--yellow); } }
+.region:focus { outline: none; }
+.region:focus-visible path { stroke: var(--yellow); stroke-width: 3; }
+.region.is-active path { fill: var(--yellow); stroke-width: 3.5; filter: drop-shadow(2px 2px 0 var(--ink)); }
+.has-region .region:not(.is-active) path { opacity: 0.6; }
+
+.region-label {
+  position: absolute; z-index: 1; display: grid; pointer-events: none;
+  justify-items: start; transform: translate(6px, -50%) scale(calc(1 / var(--k, 1))); transform-origin: left center;
+  opacity: 0; transition: transform var(--zoom-duration) var(--ease), opacity 0.18s;
+}
+/* Nom de la région : seulement au survol / focus, ou quand elle est sélectionnée */
+.region-label.is-hover, .region-label.is-active { opacity: 1; z-index: 2; }
+.region-label strong {
+  padding: 0.1em 0.45em; border-radius: 6px; background: var(--white); border: 2px solid var(--ink);
+  font-family: var(--font-display); font-size: clamp(0.75rem, 1vw, 0.85rem); font-weight: 800; line-height: 1.2; white-space: nowrap;
+}
+.region-label.is-active strong { background: var(--yellow); }
+/* Région zoomée : le libellé se centre sur le département, sinon il sortirait de la loupe */
+.region-label.is-active {
+  left: var(--cx) !important; top: var(--cy) !important; justify-items: center;
+  transform: translate(-50%, -50%) scale(calc(1 / var(--k, 1))); transform-origin: center;
+}
+
+/* Repères posés sur les loupes : vrais liens HTML, contre-zoomés pour garder leur taille */
+.pin {
+  position: absolute; z-index: 2; width: 44px; height: 44px; margin: -22px 0 0 -22px;
+  display: grid; place-items: center; color: var(--ink); text-decoration: none;
+  transform: scale(calc(1 / var(--k, 1))); transition: transform var(--zoom-duration) var(--ease);
+}
+.pin:focus { outline: none; }
+.pin__icon { display: block; overflow: visible; transition: transform 0.2s var(--ease); }
+.pin:focus-visible .pin__icon { outline: 3px solid var(--yellow); outline-offset: 2px; border-radius: 4px; }
+.pin__label {
+  --lx: -50%;
+  position: absolute; bottom: calc(100% - 6px); left: 50%; transform: translate(var(--lx), 4px);
+  width: max-content; max-width: 150px; padding: 0.35em 0.7em; border-radius: 9px;
+  background: var(--white); color: var(--ink); border: 2px solid var(--ink); box-shadow: 2px 2px 0 var(--ink);
+  font-size: 0.75rem; line-height: 1.25; text-align: center; display: grid; opacity: 0; pointer-events: none;
+  transition: opacity 0.18s, transform 0.18s var(--ease);
+}
+.pin__label strong { font-family: var(--font-display); font-weight: 800; }
+.pin__label span { color: var(--red); font-weight: 700; }
+.pin:hover .pin__label, .pin.is-hover .pin__label, .pin:focus-visible .pin__label, .pin.is-active .pin__label {
+  opacity: 1; transform: translate(var(--lx), 0); z-index: 3;
+}
+/* L'infobulle s'ouvre vers l'intérieur de la loupe */
+.pin.lbl-start .pin__label { --lx: -14px; text-align: left; }
+.pin.lbl-end .pin__label { --lx: calc(-100% + 14px); text-align: right; }
+.pin.lbl-below .pin__label { bottom: auto; top: calc(100% - 6px); }
+.pin:hover, .pin.is-hover, .pin:focus-visible, .pin.is-active { z-index: 4; }
+
+/* Suisse : torréfaction et camions */
+.pin--roastery { z-index: 1; pointer-events: auto; cursor: pointer; }
+.pin--roastery:hover .pin__icon, .pin--roastery:focus-visible .pin__icon { transform: translateY(-2px); }
+.pin--roastery.is-active .pin__icon { transform: scale(1.25); filter: drop-shadow(0 0 2px var(--yellow)) drop-shadow(0 0 1px var(--yellow)); }
+.pin--roastery .pin__icon { width: 22px; height: 22px; }
+.pin--roastery .pin__label { background: var(--ink); color: var(--yellow); border-color: var(--ink); font-weight: 800; }
+/* Libellé de la torréfaction : à droite de l'icône (elle est à l'ouest de la Suisse) */
+.pin.pin--roastery .pin__label { top: 50%; bottom: auto; left: calc(50% + 14px); max-width: 105px; transform: translate(4px, -50%); text-align: left; }
+.pin.pin--roastery:hover .pin__label, .pin.pin--roastery:focus-visible .pin__label, .pin.pin--roastery.is-active .pin__label {
+  opacity: 1; transform: translate(0, -50%); z-index: 3;
+}
+.pin--truck .pin__icon { width: 30px; height: 21px; }
+.pin--truck:hover .pin__icon, .pin--truck:focus-visible .pin__icon { transform: translateY(-2px); }
+@media (hover: none), (max-width: 699px) {
+  /* Étiquette sur le côté de l'icône (vers l'intérieur de la loupe) : pas de chevauchement entre camions proches */
+  .pin.pin--truck .pin__label { opacity: 1; top: 50%; bottom: auto; transform: translate(0, -50%); max-width: 130px; }
+  .pin.pin--truck.lbl-start .pin__label { left: calc(50% + 20px); text-align: left; }
+  .pin.pin--truck.lbl-end .pin__label { left: auto; right: calc(50% + 20px); text-align: right; }
+}
+.pin--truck.is-active .pin__icon { transform: scale(1.25); filter: drop-shadow(0 0 2px var(--yellow)) drop-shadow(0 0 1px var(--yellow)); }
+
+/* Trajet réel du café : voie maritime (trait plein) puis Rhin et route (pointillés) */
+.route { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; pointer-events: none; }
+/* Une seule couleur partout (monde, loupes, légende) : jaune avec un liseré encre pour rester lisible sur fond clair */
+.route { stroke: var(--yellow); stroke-width: 2.5; filter: drop-shadow(0 0 0.8px var(--ink)) drop-shadow(0 0 0.4px var(--ink)); }
+.route--sea { stroke-dasharray: 6 4; }
+.route--land { stroke-dasharray: 1 4; }
+.inset .route { stroke-width: 3; }
+.port circle { fill: var(--yellow); stroke: var(--ink); stroke-width: 1.2; }
+.port text {
+  font: 800 11px var(--font-display); fill: var(--white);
+  paint-order: stroke; stroke: var(--ink); stroke-width: 3px; stroke-linejoin: round;
+}
+.port-label {
+  position: absolute; z-index: 1; display: flex; align-items: center; gap: 4px; pointer-events: none;
+  transform: translate(-50%, calc(-100% + 6px)) scale(calc(1 / var(--k, 1))); transform-origin: center bottom;
+  transition: transform var(--zoom-duration) var(--ease);
+  flex-direction: column-reverse; gap: 2px; font-size: 0.75rem; font-weight: 800; color: var(--ink); white-space: nowrap;
+  text-shadow: 0 0 2px var(--white), 0 0 2px var(--white);
+}
+.port-label i { width: 10px; height: 10px; border-radius: 50%; background: var(--yellow); border: 1.5px solid var(--ink); }
+
+/* Légende et bouton de retour */
+.map__legend {
+  position: absolute; right: 0.75rem; bottom: 0.75rem; z-index: 2; list-style: none; margin: 0;
+  display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; padding: 0.35rem 0.7rem; border-radius: 10px;
+  background: var(--paper); border: 2px solid var(--ink); font-size: 0.8rem; font-weight: 700;
+}
+.map__legend li { display: inline-flex; align-items: center; gap: 0.35em; }
+.map__legend svg { height: 16px; width: auto; }
+.map__legend .legend__line { width: 26px; height: 8px; }
+.map__legend .legend__line { width: 40px; overflow: visible; }
+.map__overview {
+  position: absolute; left: 0.85rem; bottom: 0.85rem; z-index: 4;
   display: inline-flex; align-items: center; gap: 0.4em; padding: 0.5em 1em; border-radius: 999px;
   border: var(--border); background: var(--yellow); color: var(--ink);
   font: inherit; font-size: 0.85rem; font-weight: 800; cursor: pointer; box-shadow: 3px 3px 0 var(--ink);
 }
-
-/* Marqueurs : vrais liens HTML posés sur la carte, contre-zoomés pour garder leur taille */
-.marker {
-  --size: 20px;
-  position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px;
-  display: grid; place-items: center; text-decoration: none; color: var(--ink);
-  transform: scale(calc(1 / var(--k, 1))); transition: transform var(--zoom-duration) var(--ease); z-index: 1;
-}
-.marker__dot {
-  width: var(--size); height: var(--size); border-radius: 50%;
-  background: var(--red); border: 3px solid var(--white);
-  box-shadow: 0 0 0 0 rgb(255 200 0 / 0.8), 0 2px 0 var(--ink);
-  transition: transform 0.2s var(--ease), background 0.2s; animation: pulse 2.4s ease-out infinite;
-}
-.marker.is-soldout .marker__dot { background: var(--soldout); animation: none; }
-.marker:hover .marker__dot, .marker.is-hover .marker__dot, .marker:focus-visible .marker__dot { transform: scale(1.25); }
-.marker.is-active { z-index: 2; }
-.marker.is-active .marker__dot { background: var(--red); border-color: var(--yellow); box-shadow: 0 0 0 3px var(--ink); transform: scale(1.45); animation: none; }
-.marker:focus-visible { outline: none; }
-.marker:focus-visible .marker__dot { outline: 3px solid var(--yellow); outline-offset: 3px; }
-.marker__label {
-  position: absolute; bottom: calc(100% - 4px); left: 50%; transform: translate(-50%, 4px);
-  width: max-content; max-width: 230px; padding: 0.45em 0.8em; border-radius: 10px;
-  background: var(--white); color: var(--ink); border: var(--border); box-shadow: 3px 3px 0 var(--ink);
-  font-size: 0.8rem; line-height: 1.3; text-align: center; display: grid; opacity: 0; pointer-events: none;
-  transition: opacity 0.18s, transform 0.18s var(--ease);
-}
-.marker__label strong { font-family: var(--font-display); font-weight: 800; }
-.marker__label span { color: var(--red); font-weight: 700; }
-.marker:hover .marker__label, .marker.is-hover .marker__label, .marker:focus-visible .marker__label, .marker.is-active .marker__label { opacity: 1; transform: translate(-50%, 0); }
-/* Mobile : pendant le trajet du cargo, le libellé du pays masquerait l'arc */
-@media (max-width: 999px) {
-  .is-sailing .marker .marker__label { opacity: 0; transform: translate(-50%, 4px); }
-}
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgb(255 200 0 / 0.85), 0 2px 0 var(--ink); }
-  70%, 100% { box-shadow: 0 0 0 16px rgb(255 200 0 / 0), 0 2px 0 var(--ink); }
+@media (min-width: 700px) {
+  /* Loupes en bas à gauche et en haut à droite : le bouton passe en haut à gauche */
+  .map__overview { bottom: auto; top: 0.85rem; }
 }
 
-/* Trajet origine → torréfaction */
-.route {
-  fill: none; stroke: var(--red); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1 7;
-  vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 1.5px var(--white)) drop-shadow(0 0 1px var(--white));
-  opacity: 0; transition: opacity 0.25s;
+/* Mobile : bandeau du monde, puis loupes empilées en pleine largeur */
+@media (max-width: 699px) {
+  .map { display: flex; flex-direction: column; gap: 0.9rem; padding-bottom: 0.9rem; }
+  .port text { display: none; }
+  .map__leaders { display: none; }
+  .inset { position: relative; left: auto !important; top: auto !important; width: auto !important; margin-inline: 0.9rem; }
+  .map__legend { position: static; align-self: center; }
+  .map__overview { position: static; align-self: center; order: -1; margin-top: 0.9rem; }
+  .map__overview[hidden] { display: none; }
+  .pin--truck .pin__icon { width: 38px; height: 27px; }
+  .region-label strong, .port-label, .map__legend, .inset__title { font-size: 0.85rem; }
 }
-.route.is-visible { opacity: 1; }
-.route__reveal { fill: none; stroke: #fff; stroke-width: 10; stroke-dasharray: 1; stroke-dashoffset: 1; }
-.ship { opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-.ship.is-visible { opacity: 1; }
-.ship__body { fill: var(--white); stroke: var(--ink); stroke-width: 0.9; paint-order: stroke; }
-
-.destination {
-  position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; display: grid; place-items: center; z-index: 1;
-  transform: scale(calc(1 / var(--k, 1))); transition: transform var(--zoom-duration) var(--ease);
-}
-.destination__dot { width: 13px; height: 13px; background: var(--red); border: 3px solid var(--white); outline: 2px solid var(--ink); transform: rotate(45deg); border-radius: 2px; }
-.destination__label {
-  position: absolute; bottom: calc(100% - 2px); left: 50%; transform: translate(-50%, 4px);
-  width: max-content; padding: 0.3em 0.7em; border-radius: 8px; background: var(--ink); color: var(--yellow);
-  font-size: 0.75rem; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s var(--ease);
-}
-.destination:hover .destination__label, .destination.is-highlight .destination__label { opacity: 1; transform: translate(-50%, 0); }
-.destination.is-arrived .destination__dot { animation: arrive 0.6s var(--ease); background: var(--yellow); }
-@keyframes arrive {
-  0% { transform: rotate(45deg) scale(1); box-shadow: 0 0 0 0 rgb(255 200 0 / 0.9); }
-  50% { transform: rotate(45deg) scale(1.6); }
-  100% { transform: rotate(45deg) scale(1); box-shadow: 0 0 0 16px rgb(255 200 0 / 0); }
-}
+.map__overview[hidden] { display: none; }
 
 /* Panneau de fiche */
 .explorer__panel { min-width: 0; }
@@ -247,6 +350,21 @@ a { color: inherit; }
   background: var(--white); font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; text-align: center;
 }
 html:not(.js) .explorer__hint { display: none; }
+.explorer__lead {
+  margin: 0 0 1rem; padding: 0.6rem 1rem; border: 2px dashed var(--ink); border-radius: 12px;
+  background: var(--white); font-family: var(--font-display); font-weight: 700; text-align: center;
+}
+.has-selection .explorer__lead, html:not(.js) .explorer__lead { display: none; }
+@media (min-width: 1000px) { .explorer__lead { display: none; } }
+/* Hors desktop, la consigne est au-dessus de la carte : inutile de la répéter sous la carte */
+@media (max-width: 999px) { .explorer__hint { display: none; } }
+
+/* Retour à la carte, collé en bas de l'écran pendant la lecture d'une fiche (hors desktop) */
+.explorer__back {
+  position: sticky; bottom: 1rem; z-index: 5; display: flex; margin: 1.25rem auto 0; width: max-content;
+}
+@media (min-width: 1000px) { .explorer__back { display: none !important; } }
+html:not(.js) .explorer__back { display: none !important; }
 html:not(.js) .sheet + .sheet { margin-top: 1.5rem; }
 html:not(.js) .sheet__bar { display: none; }
 
@@ -286,8 +404,63 @@ html:not(.js) .sheet__bar { display: none; }
 .price { margin: 0; font-size: 0.9rem; font-weight: 600; }
 .price strong { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; }
 
+/* Torréfactions d'un café */
+.roasts { border-top: var(--border); padding-top: 0.9rem; }
+.roasts h4 { font-size: 1.05rem; text-transform: uppercase; }
+.roasts ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.roast {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; padding: 0.7rem 0.8rem;
+  border: 2px solid var(--ink); border-radius: 12px; background: var(--paper);
+}
+.roast__info { display: grid; flex: 1 1 8rem; line-height: 1.25; }
+.roast__info span { font-size: 0.85rem; color: var(--blue); font-weight: 700; }
+.roast .price strong { font-size: 1.25rem; }
+.roast .btn { padding-block: 0.45em; }
+.roast.is-soldout { filter: grayscale(0.6); }
+
+/* Panneau région : liste de ses cafés */
+.region-list__title { font-size: 1.05rem; text-transform: uppercase; border-top: var(--border); padding-top: 0.9rem; }
+.region-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.region-item {
+  border: 2px solid var(--ink); border-radius: 12px; background: var(--paper); box-shadow: 3px 3px 0 var(--ink); overflow: hidden;
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.region-item:has(.region-cafe:hover, .region-cafe:focus-visible) { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
+.region-item.is-soldout { --leaf: var(--soldout); --cherry: #c4c7d2; }
+.region-item__buy {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; flex-wrap: wrap;
+  padding: 0.55rem 0.8rem; border-top: 2px dashed var(--ink); background: var(--white);
+}
+.region-item__buy .price strong { font-size: 1.15rem; }
+.region-item__buy .btn { margin-left: auto; padding: 0.4em 1.1em; }
+.region-item__buy .badge { margin-left: auto; }
+.region-cafe__chevron { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.region-cafe {
+  display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 0.8rem; color: var(--ink); text-decoration: none;
+  transition: background 0.15s;
+}
+.region-cafe:hover, .region-cafe:focus-visible { background: var(--yellow); }
+.region-cafe:focus-visible { outline-offset: -4px; }
+.region-cafe__icon { flex: none; width: 26px; height: 32px; }
+.region-cafe__text { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
+.region-cafe__text strong { font-family: var(--font-display); font-size: 1.05rem; }
+.region-cafe__text span { font-size: 0.85rem; }
+.region-cafe__notes { color: var(--red); font-weight: 700; }
+
+/* Fiche lieu */
+.sheet--place .sheet__origin { display: flex; align-items: center; gap: 0.5em; flex-wrap: wrap; }
+.sheet__truck { width: 30px; height: 21px; }
+.sheet--roastery .sheet__origin { display: flex; align-items: center; gap: 0.5em; }
+.sheet__roastery { width: 22px; height: 22px; }
+.facts--single { grid-template-columns: 1fr; }
+
 /* ====== Liste des cafés ====== */
 .catalog { padding-block: clamp(2rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem); }
+.catalog__group + .catalog__group { margin-top: 2.5rem; }
+.catalog__region {
+  display: inline-block; margin-bottom: 1rem; padding: 0.1em 0.6em; border-radius: 8px; transform: rotate(-1.5deg);
+  background: var(--green); border: var(--border); font-size: clamp(1.3rem, 2.5vw, 1.8rem); text-transform: uppercase;
+}
 .cards { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
 .card {
   --stripe: var(--yellow);

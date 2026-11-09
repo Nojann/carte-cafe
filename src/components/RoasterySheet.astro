@@ -1,0 +1,32 @@
+---
+// Fiche de la torréfaction (point d'arrivée du trajet, loupe Suisse).
+import { useTranslations, type Lang } from '../i18n/ui';
+import { site } from '../site.config';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const city = site.roastery.name;
+---
+
+<article class="sheet sheet--roastery" id="roastery-sheet" data-sheet="torrefaction" data-kind="roastery" aria-labelledby="title-roastery">
+  <span class="anchor" id="torrefaction"></span>
+  <div class="sheet__bar">
+    <button type="button" class="icon-btn sheet__close" data-close aria-label={t('roastery.close')}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+  </div>
+  <header class="sheet__header">
+    <p class="sheet__origin">
+      <svg class="sheet__roastery" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-roastery" /></svg>
+      {t('roastery.kind')} · {city}
+    </p>
+    <h3 class="sheet__title" id="title-roastery" tabindex="-1">{t('roastery.title')}</h3>
+  </header>
+  <p class="sheet__story">{t('roastery.text', { city })}</p>
+  <div class="sheet__buy">
+    <a class="btn" href={site.shopUrl[lang]}>{t('roastery.shop')} <span aria-hidden="true">→</span></a>
+  </div>
+</article>

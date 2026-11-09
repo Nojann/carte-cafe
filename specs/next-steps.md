@@ -1,0 +1,13 @@
+- Ajouter un bandeau "il nous ont fait confiance" / client.
+- Logo :
+    - Décomposer le logo pour rendre visible les écritures
+    - Cohérence graphique avec le nuancier
+- Créer un nuancier de couleurs test
+- Système de métriques
+- Intégrer la galerie d'image
+- Ajouter l'équipe
+- Ajouter les pages boutique
+- Ajouter les mentions légales
+- Ajouter contact
+- Ajouter réseaux sociaux
+- Newsletter

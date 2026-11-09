@@ -8,6 +8,7 @@ import {
   formatPrice,
   photoExists,
   type Cafe,
+  type Region,
 } from '../lib/cafes';
 import { site } from '../site.config';
 import { withBase } from '../lib/paths';
@@ -16,12 +17,14 @@ import { useTranslations, type Lang, type UIKey } from '../i18n/ui';
 interface Props {
   lang: Lang;
   cafe: Cafe;
+  region: Region;
   prev: Cafe;
   next: Cafe;
 }
-const { lang, cafe, prev, next } = Astro.props;
+const { lang, cafe, region, prev, next } = Astro.props;
 const t = useTranslations(lang);
-const photo = cafe.photos[0];
+// Première photo du café présente sur le disque, sinon photo de la région, sinon drapeau.
+const photo = [...cafe.photos, region.photo].find((p) => p && photoExists(p.src)) ?? cafe.photos[0];
 const hasPhoto = photoExists(photo.src);
 
 const details: [string, string | undefined][] = [
@@ -39,11 +42,23 @@ const profile: [UIKey, number][] = cafe.profil
       ['sheet.sweetness', cafe.profil.douceur],
     ]
   : [];
+const origin = [countryName(cafe.pays, lang), region.nom, cafe.localite].filter(Boolean).join(' · ');
 ---
 
-<article class="sheet" id={`cafe-${cafe.slug}`} data-sheet={cafe.slug} aria-labelledby={`title-${cafe.slug}`}>
+<article
+  class="sheet"
+  id={`cafe-${cafe.slug}`}
+  data-sheet={cafe.slug}
+  data-kind="cafe"
+  data-cafe-region={region.slug}
+  aria-labelledby={`title-${cafe.slug}`}
+>
   <span class="anchor" id={cafe.slug}></span>
   <div class="sheet__bar">
+    <a class="chip-btn" href={`#region-${region.slug}`} data-region={region.slug} aria-label={t('region.back', { region: region.nom })}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+      {region.nom}
+    </a>
     <a class="icon-btn" href={`#${prev.slug}`} data-goto={prev.slug} aria-label={`${t('sheet.prev')} : ${prev.nom[lang]}`}>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
     </a>
@@ -69,15 +84,15 @@ const profile: [UIKey, number][] = cafe.profil
   </figure>
 
   <header class="sheet__header">
-    <p class="sheet__origin">{countryName(cafe.pays, lang)} · {cafe.region[lang]}</p>
+    <p class="sheet__origin">{origin}</p>
     <h3 class="sheet__title" id={`title-${cafe.slug}`} tabindex="-1">{cafe.nom[lang]}</h3>
   </header>
+
+  {cafe.histoire && <p class="sheet__story">{cafe.histoire[lang]}</p>}
 
   <ul class="tags" aria-label={t('sheet.notes')}>
     {cafe.notes[lang].map((n) => <li>{n}</li>)}
   </ul>
-
-  {cafe.histoire && <p class="sheet__story">{cafe.histoire[lang]}</p>}
 
   <dl class="facts">
     {
@@ -110,16 +125,27 @@ const profile: [UIKey, number][] = cafe.profil
     )
   }
 
-  <div class="sheet__buy">
-    {
-      cafe.prix && (
-        <p class="price">
-          <strong>{formatPrice(cafe.prix, lang)}</strong> {t('sheet.per', { g: cafe.prix.poids_g })}
-        </p>
-      )
-    }
-    <a class:list={['btn', { 'btn--ghost': !cafe.disponible }]} href={buyUrl(cafe, lang)} data-buy={cafe.slug}>
-      {cafe.disponible ? t('sheet.buy') : t('sheet.soldOutCta')}
-    </a>
+  <div class="roasts">
+    <h4>{t('sheet.roasts')}</h4>
+    <ul>
+      {
+        cafe.torrefactions.map((r) => (
+          <li class:list={['roast', { 'is-soldout': !r.disponible }]}>
+            <div class="roast__info">
+              <strong>{t(`roast.${r.niveau}`)}</strong>
+              <span>{t(`usage.${r.usage}`)}</span>
+            </div>
+            {r.prix && (
+              <p class="price">
+                <strong>{formatPrice(r.prix, lang)}</strong> {t('sheet.per', { g: r.prix.poids_g })}
+              </p>
+            )}
+            <a class:list={['btn', { 'btn--ghost': !r.disponible }]} href={buyUrl(cafe, r, lang)} data-buy={cafe.slug}>
+              {r.disponible ? t('sheet.buyShort') : t('sheet.soldOutCta')}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
   </div>
 </article>

@@ -1,107 +1,213 @@
 ---
+// Carte « De la Colombie à la Suisse » : planisphère + loupe Colombie + loupe Suisse.
+// Voir specs/specs-carte.md.
 import { buildMap } from '../lib/map';
-import { countryName, type Cafe } from '../lib/cafes';
+import { countryName, type Cafe, type Place, type Region } from '../lib/cafes';
 import { useTranslations, type Lang } from '../i18n/ui';
 import { site } from '../site.config';
 
 interface Props {
   lang: Lang;
+  regions: Region[];
   cafes: Cafe[];
+  places: Place[];
 }
-const { lang, cafes } = Astro.props;
+const { lang, regions, cafes, places } = Astro.props;
 const t = useTranslations(lang);
 
-const map = buildMap(
-  cafes.map((c) => c.pays),
-  cafes.map((c) => ({ slug: c.slug, ...c.coordonnees })),
-  site.roastery,
-);
-const bySlug = new Map(cafes.map((c) => [c.slug, c]));
+const map = buildMap({ regions, places, roastery: site.roastery });
+const placeBySlug = new Map(places.map((p) => [p.slug, p]));
+const regionBySlug = new Map(regions.map((r) => [r.slug, r]));
+const countOf = (slug: string) => {
+  const n = cafes.filter((c) => c.region === slug).length;
+  return t(n === 1 ? 'region.count.one' : 'region.count.other', { n });
+};
+const pos = (p: { xPct: number; yPct: number }) => `left:${p.xPct}%;top:${p.yPct}%`;
+/** Côté d'ouverture de l'infobulle, pour qu'elle ne soit pas coupée par le bord de la loupe. */
+const side = (p: { xPct: number; yPct: number }, below = 35) => [
+  p.xPct < 50 ? 'lbl-start' : 'lbl-end',
+  p.yPct < below && 'lbl-below',
+];
 ---
 
 <div class="map" data-map>
-  <div class="map__stage" data-stage style={`aspect-ratio: ${map.width} / ${map.height}`}>
-    <svg
-      class="map__svg"
-      viewBox={`0 0 ${map.width} ${map.height}`}
-      role="img"
-      aria-label={t('map.label')}
-      preserveAspectRatio="xMidYMid meet"
-    >
+  <!-- Icônes partagées -->
+  <svg class="map__symbols" aria-hidden="true">
+    <symbol id="i-plant" viewBox="0 0 24 30">
+      <path d="M12 29V6" fill="none" stroke="#0b1640" stroke-width="2" stroke-linecap="round" />
+      <g style="fill: var(--leaf, #00a86b)" stroke="#0b1640" stroke-width="1.4" stroke-linejoin="round">
+        <path d="M12 23c-4.5.4-8.5-1.6-10-5.6 4.6-1.4 8.6.6 10 5.6z" />
+        <path d="M12 23c4.5.4 8.5-1.6 10-5.6-4.6-1.4-8.6.6-10 5.6z" />
+        <path d="M12 15c-3.8.3-7.2-1.4-8.4-4.7 3.9-1.1 7.2.6 8.4 4.7z" />
+        <path d="M12 15c3.8.3 7.2-1.4 8.4-4.7-3.9-1.1-7.2.6-8.4 4.7z" />
+        <path d="M12 8.5c-2.3-1.6-2.8-4.4-.6-7.5 2.7 2.2 2.8 5.1.6 7.5z" />
+      </g>
+      <g style="fill: var(--cherry, #e4002b)" stroke="#0b1640" stroke-width="1">
+        <circle cx="9" cy="19.5" r="1.9" />
+        <circle cx="15.3" cy="19" r="1.7" />
+        <circle cx="14.6" cy="12" r="1.7" />
+      </g>
+    </symbol>
+    <symbol id="i-truck" viewBox="0 0 34 24">
+      <g stroke="#0b1640" stroke-width="1.6" stroke-linejoin="round">
+        <path d="M2 4.5h20.5v14H2z" fill="#00a86b" />
+        <path d="M22.5 8.5h5.5l4 5v5h-9.5z" fill="#00a86b" />
+        <path d="M4.5 8h15v5.5h-15z" fill="#fff8e6" />
+        <path d="M3 8h18l-1.6 2.6H4.6z" fill="#ffc800" />
+        <path d="M24.5 10.3h3l2.4 3h-5.4z" fill="#fff8e6" />
+        <circle cx="8" cy="19" r="3" fill="#0b1640" />
+        <circle cx="26.5" cy="19" r="3" fill="#0b1640" />
+      </g>
+      <circle cx="8" cy="19" r="1" fill="#fff8e6" />
+      <circle cx="26.5" cy="19" r="1" fill="#fff8e6" />
+    </symbol>
+    <symbol id="i-roastery" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10.5" fill="#ffc800" stroke="#0b1640" stroke-width="1.8" />
+      <ellipse cx="12" cy="12" rx="5" ry="7" transform="rotate(30 12 12)" fill="#6b3a1e" stroke="#0b1640" stroke-width="1.4" />
+      <path d="M14.6 7.3c-3 2-2.2 7.4-5.2 9.4" fill="none" stroke="#fff8e6" stroke-width="1.3" stroke-linecap="round" />
+    </symbol>
+  </svg>
+
+  <!-- Planisphère (en mobile : bandeau repère) -->
+  <div class="map__world" style={`aspect-ratio: ${map.width} / ${map.height}`}>
+    <svg class="map__svg" viewBox={`0 0 ${map.width} ${map.height}`} aria-hidden="true" preserveAspectRatio="xMidYMid meet">
       <defs>
         <clipPath id="sphere"><path d={map.outline} /></clipPath>
-        {
-          map.routes.map((r) => (
-            <mask id={`reveal-${r.slug}`} maskUnits="userSpaceOnUse" x="0" y="0" width={map.width} height={map.height}>
-              <path d={r.d} class="route__reveal" data-reveal={r.slug} pathLength="1" />
-            </mask>
-          ))
-        }
       </defs>
       <path class="map__ocean" d={map.outline} />
-      <g clip-path="url(#sphere)">
-        <rect class="map__belt" x="0" y={map.belt.y} width={map.width} height={map.belt.h} />
-        <path class="map__graticule" d={map.graticule} />
-      </g>
+      <path class="map__graticule" d={map.graticule} clip-path="url(#sphere)" />
       <g class="map__countries">
-        {map.shapes.map((s) => <path d={s.d} class:list={['map__country', { 'is-origin': s.origin }]} />)}
+        {map.shapes.map((s) => <path d={s.d} class:list={['map__country', s.key && `is-${s.key}`]} />)}
       </g>
-      <g class="routes" aria-hidden="true">
-        {map.routes.map((r) => <path d={r.d} class="route" data-route={r.slug} mask={`url(#reveal-${r.slug})`} />)}
-        <g class="ship" data-ship>
-          <g class="ship__body" transform="scale(1.7)">
-            <path d="M-8,0.5 L7,0.5 L9.5,-2 L9.5,1.2 L7,3.5 L-6.5,3.5 Z" />
-            <rect x="-5.5" y="-2.8" width="3.4" height="3" rx="0.4" />
-            <rect x="-1.6" y="-2.8" width="3.4" height="3" rx="0.4" />
-            <rect x="2.3" y="-2.8" width="3.4" height="3" rx="0.4" />
-            <rect x="-7.5" y="-5" width="2.4" height="5.2" rx="0.4" />
-          </g>
-        </g>
+      <g class="map__route">
+        <path class="route route--sea" d={map.route.sea} />
+        <path class="route route--land" d={map.route.land} />
+        {
+          map.route.ports.map((p) => (
+            <g class="port">
+              <circle cx={p.x} cy={p.y} r="3.2" />
+              <text x={p.x + (p.anchor === 'start' ? 7 : -7)} y={p.y + 4} text-anchor={p.anchor}>{p.name}</text>
+            </g>
+          ))
+        }
       </g>
-      <text class="map__belt-label" x="12" y={map.belt.y + 16}>{t('map.belt')}</text>
+      <g class="map__leaders">{map.leaders.map((d) => <path d={d} />)}</g>
     </svg>
-
-    {
-      map.markers.map((m) => {
-        const cafe = bySlug.get(m.slug)!;
-        return (
-          <a
-            href={`#${m.slug}`}
-            class:list={['marker', { 'is-soldout': !cafe.disponible }]}
-            style={`left:${m.xPct.toFixed(3)}%;top:${m.yPct.toFixed(3)}%`}
-            data-marker={m.slug}
-            data-x={m.xPct.toFixed(3)}
-            data-y={m.yPct.toFixed(3)}
-            aria-controls={`cafe-${m.slug}`}
-          >
-            <span class="marker__dot" aria-hidden="true" />
-            <span class="marker__label">
-              <strong>{cafe.nom[lang]}</strong>
-              <span>
-                {countryName(cafe.pays, lang)}
-                {!cafe.disponible && ` · ${t('sheet.soldOut')}`}
-              </span>
-            </span>
-          </a>
-        );
-      })
-    }
-
-    <span
-      class="destination"
-      data-destination
-      style={`left:${map.destination.xPct.toFixed(3)}%;top:${map.destination.yPct.toFixed(3)}%`}
-    >
-      <span class="destination__dot" aria-hidden="true"></span>
-      <span class="destination__label">{t('map.roastery', { city: site.roastery.name })}</span>
-    </span>
   </div>
 
-  <button type="button" class="map__world" data-world hidden>
+  <!-- Loupe Colombie -->
+  <section class="inset inset--co" style={map.co.style} aria-labelledby="inset-co-title">
+    <h3 class="inset__title" id="inset-co-title">{countryName('CO', lang)}</h3>
+    <div class="inset__view">
+      <div class="inset__stage" data-stage style={`aspect-ratio: ${map.co.width} / ${map.co.height}`}>
+        <svg class="inset__svg" viewBox={`0 0 ${map.co.width} ${map.co.height}`}>
+          <g class="inset__neighbours" aria-hidden="true">{map.co.neighbours.map((d) => <path d={d} />)}</g>
+          <path class="inset__outline" d={map.co.outline} aria-hidden="true" />
+          <g class="inset__departments" aria-hidden="true">
+            {map.co.departments.filter((d) => !d.region).map((d) => <path d={d.d} />)}
+          </g>
+          {
+            map.co.regions.map((r) => (
+              <a
+                href={`#region-${r.slug}`}
+                class="region"
+                data-region={r.slug}
+                data-region-shape
+                data-x={r.center.xPct}
+                data-y={r.center.yPct}
+                aria-label={`${regionBySlug.get(r.slug)!.nom}, ${countOf(r.slug)}`}
+              >
+                <path d={r.d} />
+              </a>
+            ))
+          }
+          <path class="route route--sea" d={map.co.route} aria-hidden="true" />
+        </svg>
+
+        <span class="port-label" style={pos(map.co.port)} aria-hidden="true">
+          <i></i>{map.co.port.name}
+        </span>
+
+        {
+          map.co.regions.map((r) => (
+            <span
+              class="region-label"
+              data-region-label={r.slug}
+              style={`${pos(r.label)};--cx:${r.center.xPct}%;--cy:${r.center.yPct}%`}
+              aria-hidden="true"
+            >
+              <strong>{regionBySlug.get(r.slug)!.nom}</strong>
+            </span>
+          ))
+        }
+
+      </div>
+      <p class="inset__cue" data-cue aria-hidden="true">{t('map.cue')}</p>
+    </div>
+  </section>
+
+  <!-- Loupe Suisse -->
+  <section class="inset inset--ch" style={map.ch.style} aria-labelledby="inset-ch-title">
+    <h3 class="inset__title" id="inset-ch-title">{countryName('CH', lang)}</h3>
+    <div class="inset__view">
+      <div class="inset__stage" style={`aspect-ratio: ${map.ch.width} / ${map.ch.height}`}>
+        <svg class="inset__svg" viewBox={`0 0 ${map.ch.width} ${map.ch.height}`} aria-hidden="true">
+          <g class="inset__neighbours">{map.ch.neighbours.map((d) => <path d={d} />)}</g>
+          <path class="inset__country" d={map.ch.country} />
+          <path class="route route--land" d={map.ch.route} />
+        </svg>
+
+        <a
+          href="#torrefaction"
+          class="pin pin--roastery"
+          style={pos(map.ch.roastery)}
+          data-roastery
+          aria-controls="roastery-sheet"
+          aria-label={t('map.roastery', { city: site.roastery.name })}
+        >
+          <svg class="pin__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-roastery" /></svg>
+          <span class="pin__label" aria-hidden="true">{t('map.roastery', { city: site.roastery.name })}</span>
+        </a>
+
+        {
+          map.ch.trucks.map((p) => {
+            const place = placeBySlug.get(p.slug)!;
+            return (
+              <a
+                href={`#lieu-${p.slug}`}
+                class:list={['pin', 'pin--truck', ...side(p, 60)]}
+                style={pos(p)}
+                data-place={p.slug}
+                data-ends={place.dates?.fin.toISOString()}
+                aria-controls={`place-${p.slug}`}
+                aria-label={`${place.nom[lang]}, ${t('place.truck')}`}
+              >
+                <svg class="pin__icon" viewBox="0 0 34 24" aria-hidden="true"><use href="#i-truck" /></svg>
+                <span class="pin__label" aria-hidden="true"><strong>{place.nom[lang]}</strong></span>
+              </a>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  <ul class="map__legend" aria-label={t('map.legend')}>
+    <li>
+      <svg class="legend__line" viewBox="0 0 40 8" aria-hidden="true">
+        <path class="route route--sea" d="M3 4h20" /><path class="route route--land" d="M26 4h11" />
+      </svg>
+      {t('map.legend.route')}
+    </li>
+    <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-roastery" /></svg>{t('map.legend.roastery')}</li>
+    <li><svg viewBox="0 0 34 24" aria-hidden="true"><use href="#i-truck" /></svg>{t('map.legend.truck')}</li>
+  </ul>
+
+  <button type="button" class="map__overview" data-overview hidden>
     <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
-      <path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18" fill="none" stroke="currentColor" stroke-width="2" />
+      <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="12" cy="12" r="2.5" fill="currentColor" />
     </svg>
-    {t('map.world')}
+    {t('map.overview')}
   </button>
 </div>

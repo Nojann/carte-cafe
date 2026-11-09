@@ -1,0 +1,88 @@
+---
+// Fiche d'un lieu de vente en Suisse (food truck).
+import { formatDates, mapsUrl, photoExists, type Place } from '../lib/cafes';
+import { withBase } from '../lib/paths';
+import { useTranslations, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  place: Place;
+  /** Lieux voisins (ordre ouest → est) ; absents s'il n'y a qu'un lieu. */
+  prev?: Place;
+  next?: Place;
+}
+const { lang, place, prev, next } = Astro.props;
+const t = useTranslations(lang);
+const photo = place.photo && photoExists(place.photo.src) ? place.photo : undefined;
+
+const details: [string, string | undefined][] = [
+  [t('place.dates'), place.dates && formatDates(place.dates, lang)],
+  [t('place.hours'), place.horaires[lang]],
+  [t('place.address'), place.adresse],
+];
+---
+
+<article
+  class="sheet sheet--place"
+  id={`place-${place.slug}`}
+  data-sheet={place.slug}
+  data-kind="place"
+  data-ends={place.dates?.fin.toISOString()}
+  aria-labelledby={`title-place-${place.slug}`}
+>
+  <span class="anchor" id={`lieu-${place.slug}`}></span>
+  <div class="sheet__bar">
+    {
+      prev && next && (
+        <>
+          <a class="icon-btn" href={`#lieu-${prev.slug}`} data-goto-place={prev.slug} aria-label={`${t('place.prev')} : ${prev.nom[lang]}`}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </a>
+          <a class="icon-btn" href={`#lieu-${next.slug}`} data-goto-place={next.slug} aria-label={`${t('place.next')} : ${next.nom[lang]}`}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </a>
+        </>
+      )
+    }
+    <button type="button" class="icon-btn sheet__close" data-close aria-label={t('place.close')}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+  </div>
+
+  {
+    photo && (
+      <figure class="sheet__photo">
+        <img src={withBase(photo.src)} alt={photo.alt[lang]} loading="lazy" decoding="async" width="800" height="500" />
+        {place.exemple && <span class="badge badge--soldout">{t('place.example')}</span>}
+      </figure>
+    )
+  }
+
+  <header class="sheet__header">
+    <p class="sheet__origin">
+      <svg class="sheet__truck" viewBox="0 0 34 24" aria-hidden="true"><use href="#i-truck" /></svg>
+      {t(`place.type.${place.type}`)}
+      {!photo && place.exemple && <span class="badge badge--soldout">{t('place.example')}</span>}
+    </p>
+    <h3 class="sheet__title" id={`title-place-${place.slug}`} tabindex="-1">{place.nom[lang]}</h3>
+  </header>
+
+  <dl class="facts facts--single">
+    {
+      details
+        .filter(([, v]) => v)
+        .map(([k, v]) => (
+          <div>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))
+    }
+  </dl>
+
+  <div class="sheet__buy">
+    <a class="btn" href={mapsUrl(place)} target="_blank" rel="noopener">
+      {t('place.directions')} <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+</article>

@@ -4,11 +4,11 @@
 - Nuancier couleur de l'étiquette.
 
 ## Header 
-- Ajouter le logo
+- Ajouter le logo - OK
 
 ## Bandeau d'accueil
-- Slogan : "Un café qui se souvient d'où il vient."
-- Ajouter photo - vidéo.
+- Slogan : "Un café qui se souvient d'où il vient." - OK
+- Ajouter photo - vidéo. - OK 
 
 ## Carte
 - Nouvel objectif : en gardant la carte du monde mettre en valeur la Colombie (seul pays d'origine) et la Suisse (pays de vente).

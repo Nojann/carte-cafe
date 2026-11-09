@@ -2,7 +2,10 @@
 import Layout from '../../layouts/Layout.astro';
 import WorldMap from '../../components/WorldMap.astro';
 import CoffeeSheet from '../../components/CoffeeSheet.astro';
-import { getCafes, countryName, buyUrl } from '../../lib/cafes';
+import RegionSheet from '../../components/RegionSheet.astro';
+import PlaceSheet from '../../components/PlaceSheet.astro';
+import RoasterySheet from '../../components/RoasterySheet.astro';
+import { getData, countryName, buyUrl, mainRoast } from '../../lib/cafes';
 import { languages, langs, useTranslations, type Lang } from '../../i18n/ui';
 import { site } from '../../site.config';
 import { withBase } from '../../lib/paths';
@@ -13,8 +16,9 @@ export function getStaticPaths() {
 
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
-const cafes = await getCafes();
-const countries = new Set(cafes.map((c) => c.pays)).size;
+const { regions, cafes, places } = await getData();
+const regionBySlug = new Map(regions.map((r) => [r.slug, r]));
+const cafesOf = (slug: string) => cafes.filter((c) => c.region === slug);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -29,15 +33,16 @@ const jsonLd = {
       description: c.histoire?.[lang] ?? c.notes[lang].join(', '),
       brand: { '@type': 'Brand', name: site.brand },
       countryOfOrigin: countryName(c.pays, lang),
-      ...(c.prix && {
-        offers: {
+      offers: c.torrefactions
+        .filter((r) => r.prix)
+        .map((r) => ({
           '@type': 'Offer',
-          price: c.prix.montant,
-          priceCurrency: c.prix.devise,
-          availability: `https://schema.org/${c.disponible ? 'InStock' : 'OutOfStock'}`,
-          url: c.lien[lang],
-        },
-      }),
+          name: t(`roast.${r.niveau}`),
+          price: r.prix!.montant,
+          priceCurrency: r.prix!.devise,
+          availability: `https://schema.org/${r.disponible ? 'InStock' : 'OutOfStock'}`,
+          url: buyUrl(c, r, lang),
+        })),
     },
   })),
 };
@@ -103,26 +108,44 @@ const jsonLd = {
       <div class="wrap">
         <div class="section-head">
           <h2 id="carte-title" class="display">{t('map.title')}</h2>
-          <p class="pill">{t('map.count', { n: cafes.length, c: countries })}</p>
+          <p class="pill">{t('map.count', { n: cafes.length, r: regions.length })}</p>
         </div>
+
+        <p class="explorer__lead" data-lead>{t('map.hint')}</p>
 
         <div class="explorer__body">
           <div class="explorer__map">
-            <WorldMap lang={lang} cafes={cafes} />
+            <WorldMap lang={lang} regions={regions} cafes={cafes} places={places} />
           </div>
 
-          <div class="explorer__panel" aria-live="polite" data-panel>
+          <div class="explorer__panel" data-panel>
             <p class="explorer__hint" data-hint>{t('map.hint')}</p>
+            {regions.map((region) => <RegionSheet lang={lang} region={region} cafes={cafesOf(region.slug)} />)}
             {
               cafes.map((cafe, i) => (
                 <CoffeeSheet
                   lang={lang}
                   cafe={cafe}
+                  region={regionBySlug.get(cafe.region)!}
                   prev={cafes[(i - 1 + cafes.length) % cafes.length]}
                   next={cafes[(i + 1) % cafes.length]}
                 />
               ))
             }
+            {
+              places.map((place, i) => (
+                <PlaceSheet
+                  lang={lang}
+                  place={place}
+                  prev={places.length > 1 ? places[(i - 1 + places.length) % places.length] : undefined}
+                  next={places.length > 1 ? places[(i + 1) % places.length] : undefined}
+                />
+              ))
+            }
+            <RoasterySheet lang={lang} />
+            <button type="button" class="btn btn--ghost explorer__back" data-tomap hidden>
+              <span aria-hidden="true">↑</span> {t('map.backToMap')}
+            </button>
           </div>
         </div>
       </div>
@@ -131,29 +154,37 @@ const jsonLd = {
     <section class="catalog" aria-labelledby="catalog-title">
       <div class="wrap">
         <h2 id="catalog-title" class="display">{t('list.title')}</h2>
-        <ul class="cards">
-          {
-            cafes.map((c) => (
-              <li class:list={['card', { 'is-soldout': !c.disponible }]} data-card={c.slug}>
-                <p class="card__origin">{countryName(c.pays, lang)} · {c.region[lang]}</p>
-                <h3 class="card__title">{c.nom[lang]}</h3>
-                <p class="card__notes">{c.notes[lang].join(' · ')}</p>
-                <div class="card__actions">
-                  <a href={`#${c.slug}`} data-show={c.slug} class="link">
-                    {t('list.show')}
-                  </a>
-                  {c.disponible ? (
-                    <a href={buyUrl(c, lang)} class="link link--strong" data-buy={c.slug}>
-                      {t('sheet.buy')}
-                    </a>
-                  ) : (
-                    <span class="badge badge--soldout">{t('sheet.soldOut')}</span>
-                  )}
-                </div>
-              </li>
-            ))
-          }
-        </ul>
+        {
+          regions.map((region) => (
+            <div class="catalog__group">
+              <h3 class="catalog__region">{region.nom}</h3>
+              <ul class="cards">
+                {cafesOf(region.slug).map((c) => (
+                  <li class:list={['card', { 'is-soldout': !c.disponible }]} data-card={c.slug}>
+                    <p class="card__origin">
+                      {countryName(c.pays, lang)} · {region.nom}
+                      {c.localite && ` · ${c.localite}`}
+                    </p>
+                    <h4 class="card__title">{c.nom[lang]}</h4>
+                    <p class="card__notes">{c.notes[lang].join(' · ')}</p>
+                    <div class="card__actions">
+                      <a href={`#${c.slug}`} data-show={c.slug} class="link">
+                        {t('list.show')}
+                      </a>
+                      {c.disponible ? (
+                        <a href={buyUrl(c, mainRoast(c), lang)} class="link link--strong" data-buy={c.slug}>
+                          {t('sheet.buy')}
+                        </a>
+                      ) : (
+                        <span class="badge badge--soldout">{t('sheet.soldOut')}</span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
       </div>
     </section>
 

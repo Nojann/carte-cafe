@@ -1,0 +1,87 @@
+---
+// Panneau d'une région colombienne : présentation + liste de ses cafés.
+import { buyUrl, countryName, formatPrice, mainRoast, type Cafe, type Region } from '../lib/cafes';
+import { useTranslations, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  region: Region;
+  cafes: Cafe[];
+}
+const { lang, region, cafes } = Astro.props;
+const t = useTranslations(lang);
+const count = t(cafes.length === 1 ? 'region.count.one' : 'region.count.other', { n: cafes.length });
+
+/** Prix d'appel : la torréfaction disponible la moins chère ; « dès » si les prix diffèrent. */
+function priceOf(cafe: Cafe) {
+  const priced = cafe.torrefactions.filter((r) => r.disponible && r.prix).map((r) => r.prix!);
+  if (!priced.length) return null;
+  const min = priced.reduce((a, b) => (b.montant < a.montant ? b : a));
+  const amount = formatPrice(min, lang);
+  const from = priced.some((p) => p.montant !== min.montant);
+  return { label: from ? t('region.from', { price: amount }) : amount, per: t('sheet.per', { g: min.poids_g }) };
+}
+---
+
+<article
+  class="sheet sheet--region"
+  id={`region-sheet-${region.slug}`}
+  data-sheet={region.slug}
+  data-kind="region"
+  aria-labelledby={`title-region-${region.slug}`}
+>
+  <span class="anchor" id={`region-${region.slug}`}></span>
+  <div class="sheet__bar">
+    <button type="button" class="icon-btn sheet__close" data-close aria-label={t('sheet.close')}>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+  </div>
+  <header class="sheet__header">
+    <p class="sheet__origin">{countryName('CO', lang)} · {t('region.kind')}</p>
+    <h3 class="sheet__title" id={`title-region-${region.slug}`} tabindex="-1">{region.nom}</h3>
+  </header>
+  {region.description && <p class="sheet__story">{region.description[lang]}</p>}
+
+  <h4 class="region-list__title">{t('region.cafes')} <span class="pill pill--small">{count}</span></h4>
+  <ul class="region-list">
+    {
+      cafes.map((c) => {
+        const price = priceOf(c);
+        return (
+          <li class:list={['region-item', { 'is-soldout': !c.disponible }]}>
+            <a href={`#${c.slug}`} data-goto={c.slug} class="region-cafe">
+              <svg class="region-cafe__icon" viewBox="0 0 24 30" aria-hidden="true"><use href="#i-plant" /></svg>
+              <span class="region-cafe__text">
+                <strong>{c.nom[lang]}</strong>
+                {c.producteur && <span>{c.producteur}</span>}
+                <span class="region-cafe__notes">{c.notes[lang].join(' · ')}</span>
+              </span>
+              <svg class="region-cafe__chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+            </a>
+            <div class="region-item__buy">
+              {c.disponible ? (
+                <>
+                  {price && (
+                    <p class="price">
+                      <strong>{price.label}</strong> {price.per}
+                    </p>
+                  )}
+                  <a
+                    class="btn"
+                    href={buyUrl(c, mainRoast(c), lang)}
+                    data-buy={c.slug}
+                    aria-label={`${t('sheet.buyShort')} : ${c.nom[lang]}`}
+                  >
+                    {t('sheet.buyShort')}
+                  </a>
+                </>
+              ) : (
+                <span class="badge badge--soldout">{t('sheet.soldOut')}</span>
+              )}
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+</article>

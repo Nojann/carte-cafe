@@ -1,156 +1,139 @@
-// Interactions de la carte : sélection d'un café, zoom, fiche, liste synchronisée, liens profonds.
-const ZOOM = 2.4;
+// Interactions de la carte : régions de Colombie, cafés, lieux de vente et torréfaction en Suisse,
+// zoom guidé dans la loupe Colombie, panneau, liste synchronisée, liens profonds.
+// Pas de pan/zoom libre : la molette et le pincement font défiler la page.
+const ZOOM = 2.2;
 const ZOOM_MS = 750; // = --zoom-duration dans global.css
-const DRAW_MS = 1600; // durée du tracé origine → torréfaction
-const ARRIVAL_PAUSE_MS = 400;
-const MOBILE_SHEET_DELAY_MS = 700; // mobile : pause après le zoom avant de passer à la fiche
+const MOBILE_SHEET_DELAY_MS = 100; // hors desktop : courte pause après le zoom avant de passer au panneau
+const ROASTERY = 'torrefaction'; // slug et ancre de la fiche torréfaction
+
+type Kind = 'region' | 'cafe' | 'place' | 'roastery';
+type Selection = { kind: Kind; slug: string };
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const nextFrame = () => new Promise<number>((r) => requestAnimationFrame(r));
-const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+const hashOf = ({ kind, slug }: Selection) =>
+  kind === 'region' ? `region-${slug}` : kind === 'place' ? `lieu-${slug}` : slug;
+
+/** Vrai si l'élément porte une date de fin (événement) déjà passée. */
+const isPast = (el: HTMLElement) => !!el.dataset.ends && new Date(el.dataset.ends) < new Date();
 
 export function initExplorer() {
   const root = document.querySelector<HTMLElement>('[data-explorer]');
   if (!root) return;
 
-  const stage = root.querySelector<HTMLElement>('[data-stage]')!;
-  const worldBtn = root.querySelector<HTMLButtonElement>('[data-world]')!;
+  const mapEl = root.querySelector<HTMLElement>('[data-map]')!;
+  const stage = root.querySelector<HTMLElement>('[data-stage]')!; // loupe Colombie
+  const overviewBtn = root.querySelector<HTMLButtonElement>('[data-overview]')!;
   const hint = root.querySelector<HTMLElement>('[data-hint]')!;
-  const markers = [...root.querySelectorAll<HTMLAnchorElement>('[data-marker]')];
+  const shapes = [...root.querySelectorAll<SVGAElement>('[data-region-shape]')];
+  const labels = [...root.querySelectorAll<HTMLElement>('[data-region-label]')];
+  const roasteryPin = mapEl.querySelector<HTMLAnchorElement>('[data-roastery]');
+  const backBtn = root.querySelector<HTMLButtonElement>('[data-tomap]')!;
+
+  // Événements terminés depuis le dernier build : retirés de la carte et des fiches.
+  for (const el of root.querySelectorAll<HTMLElement>('[data-ends]')) if (isPast(el)) el.remove();
+
+  const trucks = [...mapEl.querySelectorAll<HTMLAnchorElement>('[data-place]')];
   const sheets = [...root.querySelectorAll<HTMLElement>('[data-sheet]')];
   const cards = [...document.querySelectorAll<HTMLElement>('[data-card]')];
   const langLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-lang-link]')];
-  const routes = [...root.querySelectorAll<SVGPathElement>('[data-route]')];
-  const reveals = [...root.querySelectorAll<SVGPathElement>('[data-reveal]')];
-  const mapEl = root.querySelector<HTMLElement>('[data-map]')!;
-  const ship = root.querySelector<SVGGElement>('[data-ship]')!;
-  const destination = root.querySelector<HTMLElement>('[data-destination]')!;
-  const slugs = new Set(sheets.map((s) => s.dataset.sheet!));
+
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const isWide = matchMedia('(min-width: 1000px)') // = breakpoint de .explorer__body;
+  const isWide = matchMedia('(min-width: 1000px)'); // = breakpoint de .explorer__body
 
-  let current: string | null = null;
-  let zoomed = false;
-  let runId = 0; // incrémenté à chaque sélection : annule l'animation en cours
+  let current: Selection | null = null;
+  let runId = 0; // incrémenté à chaque sélection : annule le défilement prévu
+  let originCard: HTMLElement | null = null; // carte de la liste d'où l'on vient (« Voir sur la carte »)
 
-  const markerOf = (slug: string) => markers.find((m) => m.dataset.marker === slug);
-  const cardOf = (slug: string) => cards.find((c) => c.dataset.card === slug);
+  const sheetOf = (s: Selection) => sheets.find((el) => el.dataset.kind === s.kind && el.dataset.sheet === s.slug);
+  const shapeOf = (slug: string) => shapes.find((m) => m.dataset.region === slug);
+  const truckOf = (slug: string) => trucks.find((m) => m.dataset.place === slug);
+  const regionOfCafe = (slug: string) => sheetOf({ kind: 'cafe', slug })?.dataset.cafeRegion ?? '';
+  const exists = (s: Selection) => !!sheetOf(s);
 
+  function parseHash(hash: string): Selection | null {
+    const h = decodeURIComponent(hash.replace(/^#/, ''));
+    if (!h) return null;
+    const s: Selection =
+      h === ROASTERY
+        ? { kind: 'roastery', slug: ROASTERY }
+        : h.startsWith('region-')
+          ? { kind: 'region', slug: h.slice(7) }
+          : h.startsWith('lieu-')
+            ? { kind: 'place', slug: h.slice(5) }
+            : { kind: 'cafe', slug: h };
+    return exists(s) ? s : null;
+  }
+
+  /** Zoom de la loupe Colombie : le point (x, y), en % de la loupe, est amené au centre. */
   function setView(x = 50, y = 50, k = 1) {
-    // Le point (x, y) en % de la carte est amené au centre, sans laisser de vide sur les bords.
     const clamp = (v: number) => Math.min(0, Math.max(100 - 100 * k, v));
     const tx = clamp(50 - k * x);
     const ty = clamp(50 - k * y);
-    zoomed = k > 1;
     stage.style.setProperty('--k', String(k));
     stage.style.transform = k === 1 ? '' : `translate(${tx}%, ${ty}%) scale(${k})`;
   }
+  const zoomToRegion = (slug: string) => {
+    const s = shapeOf(slug);
+    if (s) setView(Number(s.dataset.x), Number(s.dataset.y), ZOOM);
+  };
 
-  function hideRoutes() {
-    for (const r of routes) r.classList.remove('is-visible');
-    for (const r of reveals) r.style.strokeDashoffset = '1';
-    ship.classList.remove('is-visible');
-    root!.classList.remove('is-sailing');
-    destination.classList.remove('is-highlight', 'is-arrived');
+  function highlightRegion(slug: string | null) {
+    mapEl.classList.toggle('has-region', !!slug);
+    for (const s of shapes) s.classList.toggle('is-active', s.dataset.region === slug);
+    for (const l of labels) l.classList.toggle('is-active', l.dataset.regionLabel === slug);
   }
 
-  function placeShip(route: SVGPathElement, length: number, at: number) {
-    const a = route.getPointAtLength(Math.max(0, at - 1));
-    const b = route.getPointAtLength(Math.min(length, at + 1));
-    const p = route.getPointAtLength(at);
-    const angle = (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI;
-    const flip = Math.abs(angle) > 90 ? ' scale(1 -1)' : ''; // le cargo reste à l'endroit
-    ship.setAttribute('transform', `translate(${p.x} ${p.y}) rotate(${angle})${flip}`);
+  function setTruck(slug: string | null) {
+    for (const el of trucks) {
+      const on = !!slug && el.dataset.place === slug;
+      el.classList.toggle('is-active', on);
+      if (on) el.setAttribute('aria-current', 'true');
+      else el.removeAttribute('aria-current');
+    }
   }
 
-  /** Vue monde → tracé animé origine → torréfaction (avec cargo) → zoom sur l'origine. */
-  async function playRoute(slug: string): Promise<boolean> {
-    const id = ++runId;
-    hideRoutes();
-    const route = routes.find((r) => r.dataset.route === slug)!;
-    const reveal = reveals.find((r) => r.dataset.reveal === slug)!;
-    const m = markerOf(slug)!;
-    const zoomIn = () => setView(Number(m.dataset.x), Number(m.dataset.y), ZOOM);
-    route.classList.add('is-visible');
-
-    if (reducedMotion.matches) {
-      reveal.style.strokeDashoffset = '0';
-      zoomIn();
-      return true;
-    }
-    if (zoomed) {
-      setView();
-      await wait(ZOOM_MS);
-      if (id !== runId) return false;
-    }
-
-    const length = route.getTotalLength();
-    placeShip(route, length, 0);
-    ship.classList.add('is-visible');
-    root!.classList.add('is-sailing'); // masque le libellé du pays sur mobile
-    destination.classList.add('is-highlight');
-    const start = performance.now();
-    for (;;) {
-      const now = await nextFrame();
-      if (id !== runId) return false;
-      const t = Math.min(1, (now - start) / DRAW_MS);
-      const e = easeInOut(t);
-      reveal.style.strokeDashoffset = String(1 - e);
-      placeShip(route, length, e * length);
-      if (t >= 1) break;
-    }
-    ship.classList.remove('is-visible');
-    root!.classList.remove('is-sailing');
-    destination.classList.add('is-arrived');
-    await wait(ARRIVAL_PAUSE_MS);
-    if (id !== runId) return false;
-    zoomIn();
-    await wait(ZOOM_MS);
-    return id === runId;
+  function setRoastery(on: boolean) {
+    roasteryPin?.classList.toggle('is-active', on);
+    if (on) roasteryPin?.setAttribute('aria-current', 'true');
+    else roasteryPin?.removeAttribute('aria-current');
   }
 
-  function updateHash(slug: string | null) {
-    const hash = slug ? `#${slug}` : '';
+  function updateHash(s: Selection | null) {
+    const hash = s ? (s.kind === 'roastery' ? `#${ROASTERY}` : `#${hashOf(s)}`) : '';
     history.replaceState(null, '', `${location.pathname}${location.search}${hash}`);
     for (const a of langLinks) a.hash = hash;
   }
 
-  function select(slug: string, { focus = true } = {}) {
-    if (!slugs.has(slug)) return;
-    current = slug;
-    root!.classList.add('has-selection');
+  const behavior = (): ScrollBehavior => (reducedMotion.matches ? 'auto' : 'smooth');
+
+  function select(sel: Selection, { focus = true } = {}) {
+    if (!exists(sel)) return;
+    const id = ++runId;
+    current = sel;
+    root!.classList.add('has-selection', 'has-explored');
     hint.hidden = true;
-    worldBtn.hidden = false;
+    overviewBtn.hidden = false;
+    backBtn.hidden = false;
 
-    for (const s of sheets) s.hidden = s.dataset.sheet !== slug;
-    for (const m of markers) {
-      const on = m.dataset.marker === slug;
-      m.classList.toggle('is-active', on);
-      if (on) m.setAttribute('aria-current', 'true');
-      else m.removeAttribute('aria-current');
-    }
-    for (const c of cards) c.classList.toggle('is-active', c.dataset.card === slug);
-
-    const sheet = sheets.find((s) => s.dataset.sheet === slug)!;
-    const behavior: ScrollBehavior = reducedMotion.matches ? 'auto' : 'smooth';
-
-    // Mobile : la carte et la fiche sont empilées. On montre d'abord la carte pendant
-    // l'animation, puis on passe à la fiche après une courte pause.
-    if (!isWide.matches) {
-      const r = mapEl.getBoundingClientRect();
-      if (r.top < 0 || r.bottom > innerHeight) mapEl.scrollIntoView({ behavior, block: 'center' });
-    }
-    const run = playRoute(slug);
-    const id = runId;
-    updateHash(slug);
-
+    const sheet = sheetOf(sel)!;
+    for (const s of sheets) s.hidden = s !== sheet;
+    const cafe = sel.kind === 'cafe' ? sel.slug : null;
+    const region = sel.kind === 'region' ? sel.slug : cafe ? regionOfCafe(cafe) : null;
+    highlightRegion(region);
+    setTruck(sel.kind === 'place' ? sel.slug : null);
+    setRoastery(sel.kind === 'roastery');
+    for (const c of cards) c.classList.toggle('is-active', c.dataset.card === cafe);
+    if (region) zoomToRegion(region);
+    else setView();
+    updateHash(sel);
     if (focus) sheet.querySelector<HTMLElement>('.sheet__title')!.focus({ preventScroll: true });
 
+    // Hors desktop, la carte et le panneau sont empilés : on laisse voir le zoom,
+    // puis on défile jusqu'au panneau.
     if (!isWide.matches) {
-      void run.then(async (done) => {
-        if (!done) return;
-        if (!reducedMotion.matches) await wait(MOBILE_SHEET_DELAY_MS);
-        if (id === runId && current === slug) sheet.scrollIntoView({ behavior, block: 'start' });
+      void wait(reducedMotion.matches ? 0 : ZOOM_MS + MOBILE_SHEET_DELAY_MS).then(() => {
+        if (id === runId) sheet.scrollIntoView({ behavior: behavior(), block: 'start' });
       });
     }
   }
@@ -158,61 +141,107 @@ export function initExplorer() {
   function reset() {
     const last = current;
     current = null;
+    runId++;
     root!.classList.remove('has-selection');
     hint.hidden = false;
-    worldBtn.hidden = true;
+    overviewBtn.hidden = true;
+    backBtn.hidden = true;
     for (const s of sheets) s.hidden = true;
-    for (const m of markers) {
-      m.classList.remove('is-active');
-      m.removeAttribute('aria-current');
-    }
+    highlightRegion(null);
+    setTruck(null);
+    setRoastery(false);
     for (const c of cards) c.classList.remove('is-active');
-    runId++;
-    hideRoutes();
     setView();
     updateHash(null);
-    if (last) markerOf(last)?.focus({ preventScroll: true });
-  }
-
-  // Marqueurs, flèches précédent/suivant, liens « Voir sur la carte »
-  document.addEventListener('click', (e) => {
-    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-marker],[data-goto],[data-show],[data-close]');
-    if (!el) return;
-    e.preventDefault();
-    if (el.hasAttribute('data-close')) return reset();
-    const slug = el.dataset.marker ?? el.dataset.goto ?? el.dataset.show!;
-    if (el.hasAttribute('data-show')) {
-      // Sur mobile, select() se charge lui-même de montrer la carte puis la fiche
-      if (isWide.matches) root.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'start' });
-      select(slug, { focus: false });
-      markerOf(slug)?.focus({ preventScroll: true });
+    if (!last) return;
+    // Venu de la liste « Tous nos cafés » : on y revient, à la carte d'origine.
+    if (originCard) {
+      const card = originCard;
+      originCard = null;
+      card.scrollIntoView({ behavior: behavior(), block: 'center' });
+      card.querySelector<HTMLElement>('[data-show]')?.focus({ preventScroll: true });
       return;
     }
-    if (el.hasAttribute('data-marker') && slug === current) return reset();
-    select(slug);
-  });
-
-  worldBtn.addEventListener('click', reset);
-
-  root.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && current) reset();
-  });
-
-  // Survol synchronisé carte ↔ liste
-  const hover = (slug: string, on: boolean) => {
-    markerOf(slug)?.classList.toggle('is-hover', on);
-    cardOf(slug)?.classList.toggle('is-hover', on);
-  };
-  for (const el of [...markers, ...cards]) {
-    const slug = el.dataset.marker ?? el.dataset.card!;
-    el.addEventListener('mouseenter', () => hover(slug, true));
-    el.addEventListener('mouseleave', () => hover(slug, false));
+    const back =
+      last.kind === 'roastery'
+        ? roasteryPin
+        : last.kind === 'place'
+          ? truckOf(last.slug)
+          : shapeOf(last.kind === 'cafe' ? regionOfCafe(last.slug) : last.slug);
+    back?.focus({ preventScroll: true });
   }
 
-  // Liens profonds : /fr/#ethiopie-guji ouvre directement la fiche
+  /** Échap : fiche café → sa région → vue d'ensemble. */
+  function up() {
+    if (current?.kind === 'cafe') select({ kind: 'region', slug: regionOfCafe(current.slug) });
+    else reset();
+  }
+
+  const same = (s: Selection) => current?.kind === s.kind && current.slug === s.slug;
+
+  document.addEventListener('click', (e) => {
+    const el = (e.target as Element).closest<HTMLElement | SVGElement>(
+      '[data-region],[data-place],[data-goto],[data-goto-place],[data-roastery],[data-show],[data-close],[data-tomap]',
+    );
+    if (!el || (!root.contains(el) && !el.hasAttribute('data-show'))) return;
+    e.preventDefault();
+    const d = el.dataset;
+    if (d.close !== undefined) return reset();
+    if (d.tomap !== undefined) {
+      mapEl.scrollIntoView({ behavior: behavior(), block: 'start' });
+      return;
+    }
+    if (d.show) {
+      // Liste sous la carte : en desktop on remonte à la carte, ailleurs select() défile jusqu'à la fiche.
+      originCard = el.closest<HTMLElement>('[data-card]');
+      if (isWide.matches) root.scrollIntoView({ behavior: behavior(), block: 'start' });
+      select({ kind: 'cafe', slug: d.show }, { focus: false });
+      return;
+    }
+    const sel: Selection =
+      d.roastery !== undefined
+        ? { kind: 'roastery', slug: ROASTERY }
+        : d.goto
+          ? { kind: 'cafe', slug: d.goto }
+          : d.gotoPlace
+            ? { kind: 'place', slug: d.gotoPlace }
+            : d.place
+              ? { kind: 'place', slug: d.place }
+              : { kind: 'region', slug: d.region! };
+    if (mapEl.contains(el)) originCard = null; // nouveau départ depuis la carte
+    // Un second clic sur l'élément actif de la carte le désélectionne.
+    if (same(sel) && (d.place || d.roastery !== undefined || d.regionShape !== undefined)) return reset();
+    select(sel);
+  });
+
+  overviewBtn.addEventListener('click', reset);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && current) up();
+  });
+
+  // Survol : une carte de café ou une région allume la région (et son libellé) sur la carte.
+  const hoverRegion = (slug: string, on: boolean) => {
+    shapeOf(slug)?.classList.toggle('is-hover', on);
+    labels.find((l) => l.dataset.regionLabel === slug)?.classList.toggle('is-hover', on);
+  };
+  for (const c of cards) {
+    const region = () => regionOfCafe(c.dataset.card!);
+    c.addEventListener('mouseenter', () => hoverRegion(region(), true));
+    c.addEventListener('mouseleave', () => hoverRegion(region(), false));
+  }
+  for (const s of shapes) {
+    const slug = s.dataset.region!;
+    s.addEventListener('mouseenter', () => hoverRegion(slug, true));
+    s.addEventListener('mouseleave', () => hoverRegion(slug, false));
+    s.addEventListener('focus', () => hoverRegion(slug, true));
+    s.addEventListener('blur', () => hoverRegion(slug, false));
+  }
+
+  // Liens profonds : /fr/#cauca-inza, /fr/#region-cauca, /fr/#lieu-marche-lausanne
   const fromHash = () => {
-    const slug = decodeURIComponent(location.hash.slice(1));
-    if (slugs.has(slug)) select(slug, { focus: false });
+    const s = parseHash(location.hash);
+    if (s && !same(s)) select(s, { focus: false });
   };
   window.addEventListener('hashchange', fromHash);
 
