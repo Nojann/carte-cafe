@@ -9,6 +9,7 @@ import Approach from '../../components/Approach.astro';
 import Contact from '../../components/Contact.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import Hummingbird from '../../components/Hummingbird.astro';
 import { getData, countryName, quickItem } from '../../lib/cafes';
 import { productJsonLd } from '../../lib/jsonld';
 import { langs, useTranslations, type Lang } from '../../i18n/ui';
@@ -45,6 +46,7 @@ const jsonLd = {
         <h1 class="hero__title">
           {t('hero.title.a')} <em>{t('hero.title.b')}</em>
         </h1>
+        <Hummingbird />
         <div class="hero__foot">
           <p class="hero__subtitle">{t('hero.subtitle')}</p>
           <a class="btn btn--big" href="#carte">{t('hero.cta')} <span aria-hidden="true">↓</span></a>
@@ -205,9 +207,11 @@ const jsonLd = {
     import { initHeroVideo } from '../../scripts/hero-video';
     import { initApproach } from '../../scripts/approach';
     import { initContact } from '../../scripts/contact';
+    import { initHummingbird } from '../../scripts/hummingbird';
     initExplorer();
     initHeroVideo();
     initApproach();
     initContact();
+    initHummingbird();
   </script>
 </Layout>

@@ -1,0 +1,20 @@
+---
+// Colibri décoratif qui vole au-dessus du titre du bandeau.
+// Le mouvement est piloté par src/scripts/hummingbird.ts ; sans JS il reste masqué.
+---
+
+<div class="hummingbird" data-hummingbird aria-hidden="true">
+  <div class="hummingbird__body">
+    <svg viewBox="0 0 64 48" width="64" height="48" focusable="false">
+      <g stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+        <path class="hummingbird__tail" d="M19 29 L4 40 L11 43 L23 33 Z" fill="var(--green)" />
+        <ellipse cx="28" cy="27" rx="13" ry="8" transform="rotate(-22 28 27)" fill="var(--blue)" />
+        <circle cx="40" cy="17" r="7" fill="var(--blue)" />
+        <path d="M35 21 Q40 27 46 20" fill="var(--red)" />
+        <path d="M46.5 15.5 L62 11.5" fill="none" />
+        <circle cx="42" cy="15" r="1.6" fill="var(--white)" stroke-width="1.2" />
+        <path class="hummingbird__wing" d="M31 22 C27 8 17 1 9 2 C15 9 21 17 27 25 Z" fill="var(--green)" />
+      </g>
+    </svg>
+  </div>
+</div>
