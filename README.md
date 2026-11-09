@@ -39,7 +39,7 @@ Les anneaux doivent être dans le sens attendu par d3-geo (sens horaire) : si ch
 - Textes de l'interface (3 langues) : `src/i18n/ui.ts`
 - Couleurs et typographies : variables en haut de `src/styles/global.css`
 - Référencement (sitemap, balises, données structurées) et conseils SEO : `docs/seo.md`
-- Nom de domaine : `site` dans `astro.config.mjs`
+- Nom de domaine : `site` dans `astro.config.mjs` (ou variables `SITE_URL` / `BASE_PATH` au build, `docs/deploiement-cloudflare.md`)
 
 ## Coordonnées de contact (anti-spam)
 L'e-mail et le téléphone ne sont écrits ni dans le dépôt ni en clair dans le HTML. Ils viennent des variables `CONTACT_EMAIL` et `PHONE_NUMBER` : dans `.env` en local (copier `.env.example`), et dans des secrets GitHub en production. Ils ne sont décodés qu'au clic sur « Afficher l'e-mail » / « Afficher le numéro ».
@@ -53,5 +53,9 @@ Le site est configuré pour `https://nojann.github.io/carte-cafe/` (`astro.confi
 2. Pousser sur la branche `main` : `.github/workflows/deploy.yml` construit et publie le site.
 3. Une seule fois : dépôt GitHub → Settings → Pages → Source : **GitHub Actions**.
 4. Une seule fois : ajouter les secrets `CONTACT_EMAIL` et `PHONE_NUMBER` (`docs/configuration-github.md`).
+
+## Publier sur Cloudflare Pages (alternative)
+Gratuit et sans GitHub Actions : build avec `SITE_URL=https://carte-cafe.pages.dev BASE_PATH=/` (site servi à la racine).
+Mise en place pas à pas, rebuild quotidien et envoi depuis sa machine : **`docs/deploiement-cloudflare.md`**.
 
 Les chemins internes passent par `withBase()` (`src/lib/paths.ts`) : l'utiliser pour tout nouveau lien ou image.
