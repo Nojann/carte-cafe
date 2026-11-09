@@ -1,0 +1,102 @@
+---
+// Mentions légales (Impressum suisse, art. 3 al. 1 let. s LCD).
+// Les informations de l'exploitant sont dans src/site.config.ts (objet `legal`).
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import ContactReveal from '../../components/ContactReveal.astro';
+import { langs, useTranslations, type Lang } from '../../i18n/ui';
+import { site } from '../../site.config';
+
+export function getStaticPaths() {
+  return langs.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const { legal } = site;
+const updated = new Intl.DateTimeFormat(`${lang}-CH`, { dateStyle: 'long' }).format(new Date(legal.updated));
+const ids = [
+  legal.uid && { label: t('legal.uid'), value: legal.uid },
+  legal.vat && { label: t('legal.vat'), value: legal.vat },
+  legal.register && { label: t('legal.register'), value: legal.register },
+].filter(Boolean) as { label: string; value: string }[];
+---
+
+<Layout lang={lang} path="/mentions-legales/" title={t('meta.legal.title')} description={t('meta.legal.description')}>
+  <div class="top top--page">
+    <Header lang={lang} path="/mentions-legales/" />
+    <section class="page-head wrap">
+      <p class="eyebrow"><span>{t('legal.eyebrow')}</span></p>
+      <h1 class="display page-head__title">{t('footer.legal')}</h1>
+    </section>
+  </div>
+
+  <main class="wrap legal">
+    <section>
+      <h2>{t('legal.operator')}</h2>
+      <address>
+        <strong>{legal.company}</strong><br />
+        {legal.legalForm}<br />
+        {legal.street}<br />
+        {legal.postcode} {legal.city}<br />
+        {t('legal.country')}
+      </address>
+      <dl>
+        <dt>{t('legal.manager')}</dt>
+        <dd>{legal.owner}</dd>
+        {
+          ids.map(({ label, value }) => (
+            <>
+              <dt>{label}</dt>
+              <dd>{value}</dd>
+            </>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section>
+      <h2>{t('legal.contact')}</h2>
+      <p>{t('legal.contactText')}</p>
+      <div class="legal__contact">
+        <ContactReveal lang={lang} subject={t('contact.subject')} />
+        <ContactReveal lang={lang} kind="phone" ghost />
+      </div>
+    </section>
+
+    <section>
+      <h2>{t('legal.hosting')}</h2>
+      <p>{t('legal.hostingText')}</p>
+    </section>
+
+    <section>
+      <h2>{t('legal.ip')}</h2>
+      <p>{t('legal.ipText')}</p>
+    </section>
+
+    <section>
+      <h2>{t('legal.liability')}</h2>
+      <p>{t('legal.liabilityText')}</p>
+    </section>
+
+    <section>
+      <h2>{t('legal.links')}</h2>
+      <p>{t('legal.linksText')}</p>
+    </section>
+
+    <section>
+      <h2>{t('legal.law')}</h2>
+      <p>{t('legal.lawText')}</p>
+    </section>
+
+    <p class="legal__updated small">{t('legal.updated', { date: updated })}</p>
+  </main>
+
+  <Footer lang={lang} />
+
+  <script>
+    import { initContact } from '../../scripts/contact';
+    initContact();
+  </script>
+</Layout>

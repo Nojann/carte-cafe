@@ -1,17 +1,14 @@
 ## TODO
 
-- Retirer "Données présentées à titre d’exemple."
 - Logo :
     - Décomposer le logo pour rendre visible les écritures
     - Cohérence graphique avec le nuancier
 
 - Ajouter colibri
 - Implémenter la roue aromatique
-- Brancher le paiement en ligne (bouton « bientôt disponible » sur la page panier)
 
-- Ajouter les mentions légales
-- (Ajouter l'équipe)
-- Ajouter un bandeau "il nous ont fait confiance" / client.
+- Remplir les infos légales (`legal` dans src/site.config.ts : raison sociale, adresse, IDE…)
+- Brancher le paiement en ligne (bouton « bientôt disponible » sur la page panier)
 
 - Système de métriques marketing
 - Newsletter
@@ -19,6 +16,8 @@
 
 
 ## DONE
+- Page mentions légales (/mentions-legales, Impressum suisse)
+- Retirer "Données présentées à titre d’exemple."
 - Contact : section accueil + page /contact + commande par e-mail depuis le panier ; e-mail et téléphone hors dépôt (secrets CONTACT_EMAIL / PHONE_NUMBER) et révélés au clic (anti-spam)
 - Pages boutique (/boutique) et panier (/panier), panier stocké dans le navigateur
 - Créer un nuancier de couleurs test

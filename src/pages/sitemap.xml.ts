@@ -5,7 +5,7 @@ import { langs, defaultLang } from '../i18n/ui';
 import { withBase } from '../lib/paths';
 
 /** Chemins sans la langue des pages à référencer. Ajouter ici toute nouvelle page publique. */
-const pages = ['/', '/boutique/', '/contact/'];
+const pages = ['/', '/boutique/', '/contact/', '/mentions-legales/'];
 
 export const GET: APIRoute = ({ site }) => {
   const url = (path: string) => new URL(withBase(path), site).toString();

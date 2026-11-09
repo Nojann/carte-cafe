@@ -660,6 +660,18 @@ button.btn { font: inherit; font-weight: 800; cursor: pointer; }
 .page-head__title:focus { outline: none; }
 .page-head__intro { max-width: 46ch; margin: 1rem 0 0; font-size: 1.1rem; font-weight: 600; }
 
+/* ====== Mentions légales ====== */
+.legal { max-width: 68ch; padding-block: clamp(2rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem); }
+.legal section + section { margin-top: 2.25rem; }
+.legal h2 { font-size: 1.3rem; text-transform: uppercase; margin: 0 0 0.6rem; }
+.legal p { margin: 0 0 0.8rem; }
+.legal address { font-style: normal; line-height: 1.6; }
+.legal dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; margin: 1rem 0 0; }
+.legal dt { font-weight: 800; }
+.legal dd { margin: 0; overflow-wrap: anywhere; }
+.legal__contact { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+.legal__updated { margin-top: 3rem; opacity: 0.8; }
+
 .shop { padding-block: clamp(2rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem); }
 .shop__group + .shop__group { margin-top: 3rem; }
 .shop-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
