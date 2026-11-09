@@ -57,9 +57,10 @@ const jsonLd = {
 
   <main class="shop">
     <div class="wrap">
+      <div class="shop__groups">
       {
         groups.map(({ region, cafes }) => (
-          <section class="shop__group" aria-labelledby={`shop-${region.slug}`}>
+          <section class="shop__group" style={`--n: ${cafes.length}`} aria-labelledby={`shop-${region.slug}`}>
             <h2 class="catalog__region" id={`shop-${region.slug}`}>{region.nom}</h2>
             <ul class="shop-grid">
               {cafes.map((c) => {
@@ -139,6 +140,7 @@ const jsonLd = {
           </section>
         ))
       }
+      </div>
     </div>
   </main>
 

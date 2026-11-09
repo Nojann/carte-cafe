@@ -502,6 +502,18 @@ html:not(.js) .sheet__bar { display: none; }
 .card__actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
 .card__actions a { white-space: nowrap; }
 
+/* PC : régions côte à côte, largeur proportionnelle au nombre de cafés (min. 1 colonne) */
+@media (min-width: 900px) {
+  .catalog__groups { display: flex; flex-wrap: wrap; gap: 2.5rem 1.5rem; align-items: stretch; }
+  .catalog__group { flex: var(--n, 1) 1 calc(var(--n, 1) * (250px + 1.5rem) - 1.5rem); min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+  .catalog__group + .catalog__group { margin-top: 0; }
+  .catalog__group .cards { flex: 1; align-self: stretch; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+  .catalog__soon {
+    flex: 1; align-self: stretch; flex-direction: column; justify-content: center; text-align: center;
+    padding: 1.5rem; border: 3px dashed var(--ink); border-radius: var(--radius);
+  }
+}
+
 /* ====== Démarche (bleu plein) : le chemin du grain en scrollytelling ====== */
 .approach { background: var(--blue); color: var(--white); padding-block: clamp(3rem, 7vw, 6rem); border-top: var(--border); }
 .approach .display { color: var(--yellow); text-shadow: 0.05em 0.05em 0 var(--red); }
@@ -651,13 +663,21 @@ button.btn { font: inherit; font-weight: 800; cursor: pointer; }
 .shop { padding-block: clamp(2rem, 5vw, 4rem) clamp(3rem, 6vw, 5rem); }
 .shop__group + .shop__group { margin-top: 3rem; }
 .shop-grid { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+
+/* PC : régions côte à côte, largeur proportionnelle au nombre de produits */
+@media (min-width: 900px) {
+  .shop__groups { display: flex; flex-wrap: wrap; gap: 3rem 1.5rem; align-items: stretch; }
+  .shop__group { flex: var(--n, 1) 1 calc(var(--n, 1) * (260px + 1.5rem) - 1.5rem); min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+  .shop__group + .shop__group { margin-top: 0; }
+  .shop__group .shop-grid { flex: 1; align-self: stretch; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+}
 .product {
   display: flex; flex-direction: column; background: var(--white); border: var(--border); border-radius: var(--radius);
   overflow: hidden; box-shadow: var(--shadow) var(--ink); scroll-margin-top: 1rem;
 }
 .product:target { box-shadow: var(--shadow) var(--red); }
 .product.is-soldout .product__photo { filter: grayscale(0.7); }
-.product__photo { position: relative; margin: 0; aspect-ratio: 16 / 10; border-bottom: var(--border); background: var(--land); }
+.product__photo { position: relative; margin: 0; aspect-ratio: 16 / 10; overflow: hidden; border-bottom: var(--border); background: var(--land); }
 .product__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .product__photo .product__flag { object-fit: contain; padding: 1.5rem; }
 .product__photo .badge { position: absolute; top: 0.8rem; left: 0.8rem; }

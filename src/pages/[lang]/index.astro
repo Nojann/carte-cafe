@@ -140,17 +140,20 @@ const jsonLd = {
     <section class="catalog" aria-labelledby="catalog-title">
       <div class="wrap">
         <h2 id="catalog-title" class="display">{t('list.title')}</h2>
+        <div class="catalog__groups">
         {
-          regions.map((region) => (
-            <div class="catalog__group">
+          regions.map((region) => {
+            const list = cafesOf(region.slug);
+            return (
+            <div class="catalog__group" style={`--n: ${Math.max(1, list.length)}`}>
               <h3 class="catalog__region">{region.nom}</h3>
-              {cafesOf(region.slug).length === 0 && (
+              {list.length === 0 ? (
                 <p class="catalog__soon">
                   <span class="badge badge--soon">{t('region.soon')}</span> {t('region.soonText')}
                 </p>
-              )}
+              ) : (
               <ul class="cards">
-                {cafesOf(region.slug).map((c) => (
+                {list.map((c) => (
                   <li class:list={['card', { 'is-soldout': !c.disponible }]} data-card={c.slug}>
                     <p class="card__origin">
                       {countryName(c.pays, lang)} · {region.nom}
@@ -180,9 +183,12 @@ const jsonLd = {
                   </li>
                 ))}
               </ul>
+              )}
             </div>
-          ))
+            );
+          })
         }
+        </div>
       </div>
     </section>
 
