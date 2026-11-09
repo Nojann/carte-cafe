@@ -709,7 +709,7 @@ button.btn { font: inherit; font-weight: 800; cursor: pointer; }
 .cart__notice { padding: 0.8rem 1rem; border: var(--border); border-radius: 12px; background: var(--yellow); font-weight: 700; }
 .cart__empty { display: grid; justify-items: start; gap: 1rem; font-size: 1.15rem; font-weight: 600; }
 .cart__layout { display: grid; gap: 2rem; align-items: start; }
-@media (min-width: 900px) { .cart__layout { grid-template-columns: 1fr 22rem; } .cart__summary { position: sticky; top: 1rem; } }
+@media (min-width: 900px) { .cart__layout { grid-template-columns: 1fr 24rem; } .cart__summary { position: sticky; top: 1rem; } }
 .cart__lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
 .cart-line {
   display: grid; align-items: center; gap: 0.6rem 1rem; padding: 0.9rem; background: var(--white);
@@ -743,6 +743,86 @@ button.btn { font: inherit; font-weight: 800; cursor: pointer; }
 .cart__total dt { font-weight: 800; }
 .cart__total dd { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; }
 .cart__checkout { width: 100%; font-size: 1.05rem; }
+.cart__order { display: grid; gap: 0.75rem; }
+.cart__order:empty { display: none; }
+
+/* ====== Contact : section d'accueil (vert plein), page dédiée, boutons e-mail / téléphone ====== */
+.contact { position: relative; overflow: hidden; padding-block: clamp(3rem, 7vw, 5.5rem); }
+.contact--section { background: var(--green); border-top: var(--border); }
+.contact--section::before {
+  /* pastille décorative, comme le haut de page */
+  content: ''; position: absolute; width: 22vw; height: 22vw; left: -9vw; bottom: -10vw; border-radius: 50%;
+  background: var(--yellow); border: var(--border); pointer-events: none;
+}
+.contact--page { padding-top: clamp(2rem, 5vw, 3.5rem); }
+.contact__inner { position: relative; display: grid; gap: 2rem 3rem; align-items: start; }
+.contact__head { display: grid; gap: 0 3rem; align-items: end; }
+.contact__head .eyebrow { grid-column: 1 / -1; }
+.contact__head .display { margin-bottom: 0.3em; }
+.contact__intro { max-width: 46ch; font-size: clamp(1.05rem, 1.6vw, 1.2rem); font-weight: 600; }
+.contact__more { font-size: 1.05rem; justify-self: start; }
+/* PC : titre à gauche, texte d'intro à droite, cartes en dessous sur toute la largeur */
+@media (min-width: 900px) {
+  .contact__head { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: 'eyebrow eyebrow' 'title intro' 'title more'; }
+  .contact__head .eyebrow { grid-area: eyebrow; }
+  .contact__head .display { grid-area: title; margin: 0; align-self: center; }
+  .contact__intro { grid-area: intro; margin-bottom: 0.5rem; }
+  .contact__more { grid-area: more; }
+}
+
+.contact__cards {
+  list-style: none; margin: 0; padding: 0; display: grid; gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+}
+.contact--page .contact__cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+.contact-card {
+  --accent: var(--red);
+  display: flex; flex-direction: column; align-items: flex-start; padding: 1.4rem 1.3rem 1.3rem;
+  background: var(--white); border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow) var(--ink);
+}
+.contact-card--phone { --accent: var(--blue); }
+.contact-card--phone .contact-card__icon { color: var(--white); }
+.contact-card--instagram { --accent: var(--pink); }
+.contact-card--truck { --accent: var(--yellow); }
+.contact-card__icon {
+  display: grid; place-items: center; width: 3.1rem; height: 3.1rem; margin-bottom: 0.9rem; border-radius: 50%;
+  background: var(--accent); border: var(--border); color: var(--ink); transform: rotate(-6deg);
+}
+.contact-card__icon svg { width: 24px; height: 24px; }
+.contact-card__title { font-size: 1.35rem; text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 0.35rem; }
+.contact-card__text { font-size: 0.95rem; }
+.contact-card__cta { margin-top: auto; }
+.contact :is(.contact-card__icon, .contact-card__cta) svg,
+.contact-reveal svg { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.contact-places { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; width: 100%; }
+.contact-places li { display: grid; gap: 0.1rem; padding-left: 0.8rem; border-left: 3px solid var(--accent); }
+.contact-places__name { font-size: 1.02rem; }
+.contact-places__meta { font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); }
+.contact-places__detail { font-size: 0.88rem; }
+
+/* Boutons e-mail / téléphone : la hauteur est réservée pour que la révélation ne fasse pas sauter la mise en page. */
+.contact-reveal { position: relative; width: 100%; margin-top: auto; container-type: inline-size; }
+.contact-reveal__trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.contact-reveal__button, .contact-reveal__result { min-height: 3.2rem; }
+.contact-reveal__button { width: 100%; padding-inline: 0.75em; gap: 0.45em; font-size: 0.95rem; }
+:is(.contact-card, .cart__order) .contact-reveal__link { flex: 1 1 100%; }
+.contact-reveal__button svg, .contact-reveal__link svg { width: 20px; height: 20px; flex: none; }
+.contact-reveal__button[aria-busy='true'] { cursor: progress; opacity: 0.85; }
+.contact-reveal__result { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; animation: contact-in 0.3s var(--ease); }
+.contact-reveal__link {
+  display: inline-flex; align-items: center; gap: 0.5em; min-width: 0; padding: 0.55em 0.7em;
+  border: 2px dashed var(--ink); border-radius: 12px; background: var(--paper);
+  font-weight: 800; text-decoration: none; overflow-wrap: anywhere;
+  /* Une adresse de 32 caractères tient sur une ligne : le texte en fait ≈ 19,5em, marges + icône ≈ 1,9em + 24px,
+     d'où « (largeur − 2rem) / 22,5 » avec une marge de sécurité. Entre 0,7rem et 1rem ; au-delà, retour à la ligne. */
+  font-size: clamp(0.7rem, calc((100cqi - 2rem) / 22.5), 1rem);
+}
+.contact-reveal__link:hover { background: var(--yellow); text-decoration: underline; text-underline-offset: 3px; }
+.contact-reveal__copy { cursor: pointer; font: inherit; font-weight: 800; font-size: 0.9rem; }
+.contact-reveal__status { min-height: 1.4em; margin: 0.35rem 0 0; font-weight: 700; }
+.contact-reveal__status:empty { min-height: 0; margin: 0; }
+@keyframes contact-in { from { opacity: 0; transform: translateY(4px); } }
 
 /* ====== Mouvement réduit ====== */
 @media (prefers-reduced-motion: reduce) {

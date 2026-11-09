@@ -7,3 +7,4 @@ export const basePath = base;
 export const homePath = (lang: string) => withBase(`/${lang}/`);
 export const shopPath = (lang: string) => withBase(`/${lang}/boutique/`);
 export const cartPath = (lang: string) => withBase(`/${lang}/panier/`);
+export const contactPath = (lang: string) => withBase(`/${lang}/contact/`);

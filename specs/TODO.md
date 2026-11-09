@@ -11,3 +11,7 @@ Pour le client :
 - Besoins d'images pour chaque café
 - Image de meilleur qualité pour le torrefacteur
 - Logo au format original : SVG
+- Trouver un nom de domaine plus simple (qui se retient facilement)
+
+- Faut-il faire une section pour les clients professionnels où vous montre vos clients actuels ?
+- Voulez vous faire une page sur l'équipe comme sur le site d'origine ?

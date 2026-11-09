@@ -19,6 +19,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Coordonnées de contact, hors du dépôt (src/lib/contact.ts, docs/configuration-github.md)
+      CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+      PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
     steps:
       - uses: actions/checkout@v7
       - uses: withastro/action@v6 # npm ci + astro build, puis upload de dist/

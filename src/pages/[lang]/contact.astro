@@ -1,0 +1,38 @@
+---
+// Page contact : e-mail révélé à la demande (anti-spam), Instagram, lieux du food truck.
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Contact from '../../components/Contact.astro';
+import { langs, useTranslations, type Lang } from '../../i18n/ui';
+import { site } from '../../site.config';
+
+export function getStaticPaths() {
+  return langs.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+---
+
+<Layout lang={lang} path="/contact/" title={t('meta.contact.title', { brand: site.brand })} description={t('meta.contact.description')}>
+  <div class="top top--page">
+    <Header lang={lang} path="/contact/" />
+    <section class="page-head wrap">
+      <p class="eyebrow"><span>{t('contact.eyebrow')}</span></p>
+      <h1 class="display page-head__title">{t('contact.title')}</h1>
+      <p class="page-head__intro">{t('contact.intro')}</p>
+    </section>
+  </div>
+
+  <main>
+    <Contact lang={lang} variant="page" />
+  </main>
+
+  <Footer lang={lang} />
+
+  <script>
+    import { initContact } from '../../scripts/contact';
+    initContact();
+  </script>
+</Layout>

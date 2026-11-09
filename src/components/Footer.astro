@@ -1,7 +1,7 @@
 ---
 import { useTranslations, type Lang } from '../i18n/ui';
 import { site } from '../site.config';
-import { shopPath } from '../lib/paths';
+import { shopPath, contactPath } from '../lib/paths';
 
 interface Props {
   lang: Lang;
@@ -15,8 +15,8 @@ const t = useTranslations(lang);
     <p class="brand">{site.brand}</p>
     <ul>
       <li><a href={shopPath(lang)}>{t('nav.shop')}</a></li>
-      <li><a href={`mailto:${site.contactEmail}`}>{t('footer.contact')}</a></li>
-      <li><a href={site.instagram}>Instagram</a></li>
+      <li><a href={contactPath(lang)}>{t('footer.contact')}</a></li>
+      <li><a href={site.instagram} rel="noopener">Instagram</a></li>
       <li><a href="#">{t('footer.legal')}</a></li>
     </ul>
     <p class="small">{t('footer.examples')}</p>

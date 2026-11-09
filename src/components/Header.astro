@@ -2,11 +2,11 @@
 // Barre du haut commune à toutes les pages : logo, navigation, panier, langues.
 import { languages, langs, useTranslations, type Lang } from '../i18n/ui';
 import { site } from '../site.config';
-import { withBase, homePath, shopPath, cartPath } from '../lib/paths';
+import { withBase, homePath, shopPath, cartPath, contactPath } from '../lib/paths';
 
 interface Props {
   lang: Lang;
-  /** Chemin de la page sans la langue (`/`, `/boutique/`, `/panier/`) : sert au sélecteur de langue. */
+  /** Chemin de la page sans la langue (`/`, `/boutique/`, `/panier/`, `/contact/`) : sert au sélecteur de langue. */
   path?: string;
 }
 const { lang, path = '/' } = Astro.props;
@@ -23,6 +23,7 @@ const home = path === '/' ? '' : homePath(lang);
     <a href={`${home}#carte`}>{t('nav.map')}</a>
     <a href={`${home}#demarche`}>{t('nav.approach')}</a>
     <a href={shopPath(lang)} aria-current={path === '/boutique/' ? 'page' : undefined}>{t('nav.shop')}</a>
+    <a href={contactPath(lang)} aria-current={path === '/contact/' ? 'page' : undefined}>{t('nav.contact')}</a>
   </nav>
   <a
     class="cart-link"

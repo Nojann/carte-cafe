@@ -32,17 +32,25 @@ Copier un fichier de `src/content/lieux/`. Type `marche`, `evenement` (avec `dat
 Les anneaux doivent être dans le sens attendu par d3-geo (sens horaire) : si chaque département couvre « toute la Terre » (`geoArea` ≈ 12,57), inverser l'ordre des points de chaque anneau.
 
 ## Où modifier quoi
-- Nom de marque, boutique, contact, ville de la torréfaction : `src/site.config.ts`
+- Nom de marque, Instagram, ville de la torréfaction : `src/site.config.ts`
+- E-mail et téléphone de contact : variables `CONTACT_EMAIL` et `PHONE_NUMBER` (`docs/configuration-github.md`)
 - Position et taille des loupes Colombie / Suisse : `INSETS` dans `src/lib/map.ts`
 - Trajet du café (ports, points de passage maritimes, Rhin) : `src/data/route.ts`
 - Textes de l'interface (3 langues) : `src/i18n/ui.ts`
 - Couleurs et typographies : variables en haut de `src/styles/global.css`
 - Nom de domaine : `site` dans `astro.config.mjs`
 
+## Coordonnées de contact (anti-spam)
+L'e-mail et le téléphone ne sont écrits ni dans le dépôt ni en clair dans le HTML. Ils viennent des variables `CONTACT_EMAIL` et `PHONE_NUMBER` : dans `.env` en local (copier `.env.example`), et dans des secrets GitHub en production. Ils ne sont décodés qu'au clic sur « Afficher l'e-mail » / « Afficher le numéro ».
+Mise en place pas à pas : **`docs/configuration-github.md`**.
+
+Le contact apparaît sur l'accueil (section entre « Tous nos cafés » et « Notre démarche », `src/components/Contact.astro`), sur la page `/[lang]/contact/` et dans le panier (« Commander par e-mail », panier recopié dans le message).
+
 ## Publier sur GitHub Pages
 Le site est configuré pour `https://nojann.github.io/carte-cafe/` (`astro.config.mjs`).
 1. Le dépôt doit s'appeler `carte-cafe` (sinon adapter `base`).
 2. Pousser sur la branche `main` : `.github/workflows/deploy.yml` construit et publie le site.
 3. Une seule fois : dépôt GitHub → Settings → Pages → Source : **GitHub Actions**.
+4. Une seule fois : ajouter les secrets `CONTACT_EMAIL` et `PHONE_NUMBER` (`docs/configuration-github.md`).
 
 Les chemins internes passent par `withBase()` (`src/lib/paths.ts`) : l'utiliser pour tout nouveau lien ou image.

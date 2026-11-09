@@ -1,13 +1,15 @@
 ---
 // Panier : contenu lu dans le navigateur (src/scripts/cart-page.ts), prix issus du catalogue généré au build.
-// Le paiement n'est pas encore branché : bouton désactivé « bientôt disponible ».
+// Le paiement n'est pas encore branché : bouton désactivé « bientôt disponible » + commande par e-mail ou téléphone.
 import Layout from '../../layouts/Layout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import ContactReveal from '../../components/ContactReveal.astro';
 import { getData, cartCatalog } from '../../lib/cafes';
 import { langs, useTranslations, type Lang } from '../../i18n/ui';
 import { site } from '../../site.config';
-import { shopPath } from '../../lib/paths';
+import { contactEmail, contactPhone } from '../../lib/contact';
+import { shopPath, contactPath } from '../../lib/paths';
 
 export function getStaticPaths() {
   return langs.map((lang) => ({ params: { lang } }));
@@ -17,6 +19,10 @@ const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
 const { regions, cafes } = await getData();
 const catalog = cartCatalog(cafes, regions, lang);
+const hasEmail = contactEmail() !== null;
+const hasPhone = contactPhone() !== null;
+// Texte sous le bouton de paiement, selon les moyens de commande disponibles.
+const checkoutNote = hasEmail && hasPhone ? 'cart.checkoutNoteBoth' : hasPhone ? 'cart.checkoutNotePhone' : 'cart.checkoutNote';
 // Textes utilisés par le rendu côté navigateur.
 const strings = {
   remove: t('cart.remove'),
@@ -67,9 +73,12 @@ const strings = {
         <button type="button" class="btn btn--big cart__checkout" disabled aria-describedby="checkout-note">
           {t('cart.checkout')}
         </button>
-        <p class="small" id="checkout-note">
-          {t('cart.checkoutNote')} <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
-        </p>
+        <p class="small" id="checkout-note">{t(checkoutNote)}</p>
+        <div class="cart__order">
+          <ContactReveal lang={lang} label={t('contact.order')} subject={t('contact.order.subject')} cartIntro={t('contact.order.intro')} />
+          <ContactReveal lang={lang} kind="phone" label={t('contact.orderPhone')} ghost={hasEmail} />
+        </div>
+        <a class="link small" href={contactPath(lang)}>{t('contact.more')} <span aria-hidden="true">→</span></a>
         <a class="link" href={shopPath(lang)}><span aria-hidden="true">←</span> {t('cart.continue')}</a>
       </aside>
     </div>
@@ -79,6 +88,8 @@ const strings = {
 
   <script>
     import { initCartPage } from '../../scripts/cart-page';
+    import { initContact } from '../../scripts/contact';
     initCartPage();
+    initContact();
   </script>
 </Layout>

@@ -6,6 +6,7 @@ import RegionSheet from '../../components/RegionSheet.astro';
 import PlaceSheet from '../../components/PlaceSheet.astro';
 import RoasterySheet from '../../components/RoasterySheet.astro';
 import Approach from '../../components/Approach.astro';
+import Contact from '../../components/Contact.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { getData, countryName, quickItem } from '../../lib/cafes';
@@ -192,6 +193,8 @@ const jsonLd = {
       </div>
     </section>
 
+    <Contact lang={lang} variant="section" />
+
     <Approach lang={lang} />
   </main>
 
@@ -201,8 +204,10 @@ const jsonLd = {
     import { initExplorer } from '../../scripts/explorer';
     import { initHeroVideo } from '../../scripts/hero-video';
     import { initApproach } from '../../scripts/approach';
+    import { initContact } from '../../scripts/contact';
     initExplorer();
     initHeroVideo();
     initApproach();
+    initContact();
   </script>
 </Layout>
