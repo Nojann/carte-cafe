@@ -2,12 +2,14 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { geoDistance } from 'd3-geo';
 import { getCollection, type CollectionEntry } from 'astro:content';
-import type { Lang } from '../i18n/ui';
+import { useTranslations, type Lang } from '../i18n/ui';
 import { site } from '../site.config';
 import { isInDepartment } from './map';
+import { withBase } from './paths';
 
 type CafeData = CollectionEntry<'cafes'>['data'];
 export type Roast = CafeData['torrefactions'][number];
+export type Format = Roast['formats'][number];
 export type Region = CollectionEntry<'regions'>['data'];
 export type Place = CollectionEntry<'lieux'>['data'];
 export type Cafe = Omit<CafeData, 'region'> & {
@@ -65,8 +67,88 @@ export function countryName(code: string, lang: Lang) {
   return new Intl.DisplayNames([lang], { type: 'region' }).of(code) ?? code;
 }
 
-export function formatPrice(prix: NonNullable<Roast['prix']>, lang: Lang) {
-  return new Intl.NumberFormat(lang, { style: 'currency', currency: prix.devise }).format(prix.montant);
+export function formatPrice(montant: number, devise: string, lang: Lang) {
+  return new Intl.NumberFormat(lang, { style: 'currency', currency: devise }).format(montant);
+}
+
+/** « 250 g », « 1 kg » (même rendu que weightLabel dans scripts/cart.ts). */
+export function formatWeight(g: number, lang: Lang) {
+  return g >= 1000
+    ? new Intl.NumberFormat(lang, { style: 'unit', unit: 'kilogram' }).format(g / 1000)
+    : new Intl.NumberFormat(lang, { style: 'unit', unit: 'gram' }).format(g);
+}
+
+/** Prix et disponibilité par « torréfaction:poids », lus par les formulaires produit (scripts/cart.ts). */
+export function offersOf(cafe: Cafe, lang: Lang) {
+  const offers: Record<string, { price: string; disponible: boolean }> = {};
+  for (const r of cafe.torrefactions) {
+    for (const f of r.formats) {
+      offers[`${r.niveau}:${f.poids_g}`] = { price: formatPrice(f.montant, r.devise, lang), disponible: r.disponible };
+    }
+  }
+  return JSON.stringify(offers);
+}
+
+/** Identifiant d'un article du panier : café, torréfaction et format, ex. « narino-lave:moyenne:250 ». */
+export function itemId(cafe: Cafe, roast: Roast, format: Format) {
+  return `${cafe.slug}:${roast.niveau}:${format.poids_g}`;
+}
+
+/** Prix d'appel : le plus petit format de la torréfaction disponible la moins chère. */
+export function minPrice(cafe: Cafe) {
+  const offers = cafe.torrefactions
+    .filter((r) => r.disponible)
+    .map((r) => ({ roast: r, format: r.formats[0] }));
+  if (!offers.length) return null;
+  const min = offers.reduce((a, b) => (b.format.montant < a.format.montant ? b : a));
+  return { ...min, from: offers.some((o) => o.format.montant !== min.format.montant) };
+}
+
+/** Article ajouté par les boutons « Acheter » rapides : torréfaction principale, plus petit format. */
+export function quickItem(cafe: Cafe) {
+  const roast = mainRoast(cafe);
+  return itemId(cafe, roast, roast.formats[0]);
+}
+
+/** Catalogue de tous les articles, embarqué dans la page panier : les prix viennent toujours du build. */
+export function cartCatalog(cafes: Cafe[], regions: Region[], lang: Lang) {
+  const t = useTranslations(lang);
+  const regionBySlug = new Map(regions.map((r) => [r.slug, r]));
+  const catalog: Record<string, CatalogItem> = {};
+  for (const cafe of cafes) {
+    const photo = pickPhoto(cafe, regionBySlug.get(cafe.region)!);
+    for (const roast of cafe.torrefactions) {
+      for (const format of roast.formats) {
+        catalog[itemId(cafe, roast, format)] = {
+          slug: cafe.slug,
+          nom: cafe.nom[lang],
+          roast: `${t(`roast.${roast.niveau}`)} · ${t(`usage.${roast.usage}`)}`,
+          poids_g: format.poids_g,
+          montant: format.montant,
+          devise: roast.devise,
+          disponible: roast.disponible,
+          photo: photoExists(photo.src) ? withBase(photo.src) : null,
+        };
+      }
+    }
+  }
+  return catalog;
+}
+
+export type CatalogItem = {
+  slug: string;
+  nom: string;
+  roast: string;
+  poids_g: number;
+  montant: number;
+  devise: string;
+  disponible: boolean;
+  photo: string | null;
+};
+
+/** Première photo du café présente sur le disque, sinon photo de la région, sinon la première déclarée. */
+export function pickPhoto(cafe: Cafe, region: Region) {
+  return [...cafe.photos, region.photo].find((p) => p && photoExists(p.src)) ?? cafe.photos[0];
 }
 
 export function formatAltitude(alt: NonNullable<Cafe['altitude']>, lang: Lang) {
@@ -84,13 +166,6 @@ export function formatDistance(cafe: Cafe, lang: Lang) {
   const { lat, lng } = cafe.coordonnees;
   const km = geoDistance([lng, lat], [site.roastery.lng, site.roastery.lat]) * 6371;
   return `≈ ${new Intl.NumberFormat(lang).format(Math.round(km / 100) * 100)} km`;
-}
-
-export function buyUrl(cafe: Cafe, roast: Roast, lang: Lang) {
-  const url = new URL(roast.lien[lang]);
-  for (const [k, v] of Object.entries(site.utm)) url.searchParams.set(k, v);
-  url.searchParams.set('utm_campaign', `${cafe.slug}-${roast.niveau}`);
-  return url.toString();
 }
 
 /** Torréfaction mise en avant (première disponible, sinon la première). */

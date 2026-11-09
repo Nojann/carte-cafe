@@ -50,7 +50,12 @@ torrefactions:
       fr: https://www.cafelacasitadelabuelo.com/
       en: https://www.cafelacasitadelabuelo.com/
       es: https://www.cafelacasitadelabuelo.com/
-    prix: { montant: 60, devise: CHF, poids_g: 1000 }
+    devise: CHF
+    # EXEMPLE à valider : seul le prix au kilo vient de la grille tarifaire 2027
+    formats:
+      - { poids_g: 250, montant: 17 }
+      - { poids_g: 500, montant: 32 }
+      - { poids_g: 1000, montant: 60 }
     disponible: true
   - niveau: foncee
     usage: espresso
@@ -58,6 +63,11 @@ torrefactions:
       fr: https://www.cafelacasitadelabuelo.com/
       en: https://www.cafelacasitadelabuelo.com/
       es: https://www.cafelacasitadelabuelo.com/
-    prix: { montant: 60, devise: CHF, poids_g: 1000 }
+    devise: CHF
+    # EXEMPLE à valider : seul le prix au kilo vient de la grille tarifaire 2027
+    formats:
+      - { poids_g: 250, montant: 17 }
+      - { poids_g: 500, montant: 32 }
+      - { poids_g: 1000, montant: 60 }
     disponible: true
 ---

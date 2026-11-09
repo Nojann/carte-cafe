@@ -2,6 +2,7 @@
 // Fiche de la torréfaction (point d'arrivée du trajet, loupe Suisse).
 import { useTranslations, type Lang } from '../i18n/ui';
 import { site } from '../site.config';
+import { shopPath } from '../lib/paths';
 
 interface Props {
   lang: Lang;
@@ -27,6 +28,6 @@ const city = site.roastery.name;
   </header>
   <p class="sheet__story">{t('roastery.text', { city })}</p>
   <div class="sheet__buy">
-    <a class="btn" href={site.shopUrl[lang]}>{t('roastery.shop')} <span aria-hidden="true">→</span></a>
+    <a class="btn" href={shopPath(lang)}>{t('roastery.shop')} <span aria-hidden="true">→</span></a>
   </div>
 </article>

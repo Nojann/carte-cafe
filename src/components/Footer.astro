@@ -1,0 +1,24 @@
+---
+import { useTranslations, type Lang } from '../i18n/ui';
+import { site } from '../site.config';
+import { shopPath } from '../lib/paths';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <p class="brand">{site.brand}</p>
+    <ul>
+      <li><a href={shopPath(lang)}>{t('nav.shop')}</a></li>
+      <li><a href={`mailto:${site.contactEmail}`}>{t('footer.contact')}</a></li>
+      <li><a href={site.instagram}>Instagram</a></li>
+      <li><a href="#">{t('footer.legal')}</a></li>
+    </ul>
+    <p class="small">{t('footer.examples')}</p>
+  </div>
+</footer>

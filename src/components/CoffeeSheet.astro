@@ -1,12 +1,14 @@
 ---
 import {
-  buyUrl,
   countryName,
   flagDataUri,
   formatAltitude,
   formatDistance,
   formatPrice,
+  formatWeight,
+  offersOf,
   photoExists,
+  pickPhoto,
   type Cafe,
   type Region,
 } from '../lib/cafes';
@@ -24,7 +26,8 @@ interface Props {
 const { lang, cafe, region, prev, next } = Astro.props;
 const t = useTranslations(lang);
 // Première photo du café présente sur le disque, sinon photo de la région, sinon drapeau.
-const photo = [...cafe.photos, region.photo].find((p) => p && photoExists(p.src)) ?? cafe.photos[0];
+const photo = pickPhoto(cafe, region);
+const offers = offersOf(cafe, lang);
 const hasPhoto = photoExists(photo.src);
 
 const details: [string, string | undefined][] = [
@@ -131,18 +134,37 @@ const origin = [countryName(cafe.pays, lang), region.nom, cafe.localite].filter(
       {
         cafe.torrefactions.map((r) => (
           <li class:list={['roast', { 'is-soldout': !r.disponible }]}>
-            <div class="roast__info">
-              <strong>{t(`roast.${r.niveau}`)}</strong>
-              <span>{t(`usage.${r.usage}`)}</span>
-            </div>
-            {r.prix && (
+            <form
+              class="roast__form"
+              data-product={cafe.slug}
+              data-name={cafe.nom[lang]}
+              data-added={t('shop.added')}
+              data-offers={offers}
+            >
+              <input type="hidden" name="roast" value={r.niveau} />
+              <div class="roast__info">
+                <strong>{t(`roast.${r.niveau}`)}</strong>
+                <span>{t(`usage.${r.usage}`)}</span>
+              </div>
               <p class="price">
-                <strong>{formatPrice(r.prix, lang)}</strong> {t('sheet.per', { g: r.prix.poids_g })}
+                <strong data-price>{formatPrice(r.formats[0].montant, r.devise, lang)}</strong>
               </p>
-            )}
-            <a class:list={['btn', { 'btn--ghost': !r.disponible }]} href={buyUrl(cafe, r, lang)} data-buy={cafe.slug}>
-              {r.disponible ? t('sheet.buyShort') : t('sheet.soldOutCta')}
-            </a>
+              {r.disponible ? (
+                <div class="roast__buy">
+                  <label class="visually-hidden" for={`size-${cafe.slug}-${r.niveau}`}>{t('sheet.format')}</label>
+                  <select class="select" name="size" id={`size-${cafe.slug}-${r.niveau}`}>
+                    {r.formats.map((f) => (
+                      <option value={f.poids_g}>{formatWeight(f.poids_g, lang)}</option>
+                    ))}
+                  </select>
+                  <button type="submit" class="btn" aria-label={`${t('shop.add')} : ${cafe.nom[lang]}, ${t(`roast.${r.niveau}`)}`}>
+                    {t('sheet.add')}
+                  </button>
+                </div>
+              ) : (
+                <span class="badge badge--soldout">{t('sheet.soldOut')}</span>
+              )}
+            </form>
           </li>
         ))
       }

@@ -1,6 +1,6 @@
 ---
 // Panneau d'une région colombienne : présentation + liste de ses cafés.
-import { buyUrl, countryName, formatPrice, mainRoast, type Cafe, type Region } from '../lib/cafes';
+import { countryName, formatPrice, minPrice, quickItem, type Cafe, type Region } from '../lib/cafes';
 import { useTranslations, type Lang } from '../i18n/ui';
 
 interface Props {
@@ -13,14 +13,15 @@ const t = useTranslations(lang);
 const soon = cafes.length === 0;
 const count = t(cafes.length === 1 ? 'region.count.one' : 'region.count.other', { n: cafes.length });
 
-/** Prix d'appel : la torréfaction disponible la moins chère ; « dès » si les prix diffèrent. */
+/** Prix d'appel : plus petit format de la torréfaction disponible la moins chère ; « dès » si les prix diffèrent. */
 function priceOf(cafe: Cafe) {
-  const priced = cafe.torrefactions.filter((r) => r.disponible && r.prix).map((r) => r.prix!);
-  if (!priced.length) return null;
-  const min = priced.reduce((a, b) => (b.montant < a.montant ? b : a));
-  const amount = formatPrice(min, lang);
-  const from = priced.some((p) => p.montant !== min.montant);
-  return { label: from ? t('region.from', { price: amount }) : amount, per: t('sheet.per', { g: min.poids_g }) };
+  const min = minPrice(cafe);
+  if (!min) return null;
+  const amount = formatPrice(min.format.montant, min.roast.devise, lang);
+  return {
+    label: min.from ? t('region.from', { price: amount }) : amount,
+    per: t('sheet.per', { g: min.format.poids_g }),
+  };
 }
 ---
 
@@ -76,14 +77,17 @@ function priceOf(cafe: Cafe) {
                       <strong>{price.label}</strong> {price.per}
                     </p>
                   )}
-                  <a
+                  <button
+                    type="button"
                     class="btn"
-                    href={buyUrl(c, mainRoast(c), lang)}
-                    data-buy={c.slug}
-                    aria-label={`${t('sheet.buyShort')} : ${c.nom[lang]}`}
+                    data-add-to-cart
+                    data-item={quickItem(c)}
+                    data-name={c.nom[lang]}
+                    data-added={t('shop.added')}
+                    aria-label={`${t('shop.add')} : ${c.nom[lang]}`}
                   >
                     {t('sheet.buyShort')}
-                  </a>
+                  </button>
                 </>
               ) : (
                 <span class="badge badge--soldout">{t('sheet.soldOut')}</span>

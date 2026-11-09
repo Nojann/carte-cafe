@@ -1,17 +1,21 @@
 ---
 import '@fontsource-variable/bricolage-grotesque';
 import '../styles/global.css';
-import { langs, type Lang } from '../i18n/ui';
-import { withBase } from '../lib/paths';
+import { langs, useTranslations, type Lang } from '../i18n/ui';
+import { withBase, cartPath } from '../lib/paths';
 import { themeCss, themeColors, defaultTheme } from '../data/themes';
 
 interface Props {
   lang: Lang;
   title: string;
   description: string;
+  /** Chemin de la page sans la langue : `/`, `/boutique/`, `/panier/`. */
+  path?: string;
+  noindex?: boolean;
 }
-const { lang, title, description } = Astro.props;
-const canonical = new URL(withBase(`/${lang}/`), Astro.site);
+const { lang, title, description, path = '/', noindex = false } = Astro.props;
+const t = useTranslations(lang);
+const canonical = new URL(withBase(`/${lang}${path}`), Astro.site);
 ---
 
 <!doctype html>
@@ -22,8 +26,9 @@ const canonical = new URL(withBase(`/${lang}/`), Astro.site);
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(withBase(`/${l}/`), Astro.site)} />)}
-    <link rel="alternate" hreflang="x-default" href={new URL(withBase('/'), Astro.site)} />
+    {noindex && <meta name="robots" content="noindex" />}
+    {langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(withBase(`/${l}${path}`), Astro.site)} />)}
+    {path === '/' && <link rel="alternate" hreflang="x-default" href={new URL(withBase('/'), Astro.site)} />}
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -47,5 +52,17 @@ const canonical = new URL(withBase(`/${lang}/`), Astro.site);
   </head>
   <body>
     <slot />
+    <!-- Confirmation d'ajout au panier (src/scripts/cart.ts) -->
+    <div class="toast" data-toast role="status" aria-live="polite" hidden>
+      <p class="toast__text" data-toast-text></p>
+      <a class="link link--strong" href={cartPath(lang)}>{t('cart.view')} <span aria-hidden="true">→</span></a>
+      <button type="button" class="icon-btn toast__close" data-toast-close aria-label={t('cart.close')}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+    <script>
+      import { initCart } from '../scripts/cart';
+      initCart();
+    </script>
   </body>
 </html>

@@ -1,0 +1,84 @@
+---
+// Panier : contenu lu dans le navigateur (src/scripts/cart-page.ts), prix issus du catalogue généré au build.
+// Le paiement n'est pas encore branché : bouton désactivé « bientôt disponible ».
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { getData, cartCatalog } from '../../lib/cafes';
+import { langs, useTranslations, type Lang } from '../../i18n/ui';
+import { site } from '../../site.config';
+import { shopPath } from '../../lib/paths';
+
+export function getStaticPaths() {
+  return langs.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const { regions, cafes } = await getData();
+const catalog = cartCatalog(cafes, regions, lang);
+// Textes utilisés par le rendu côté navigateur.
+const strings = {
+  remove: t('cart.remove'),
+  removeItem: t('cart.removeItem'),
+  qty: t('cart.qty'),
+  less: t('cart.less'),
+  more: t('cart.more'),
+  shop: shopPath(lang),
+};
+---
+
+<Layout
+  lang={lang}
+  path="/panier/"
+  title={t('meta.cart.title', { brand: site.brand })}
+  description={t('meta.cart.description')}
+  noindex
+>
+  <div class="top top--page">
+    <Header lang={lang} path="/panier/" />
+    <section class="page-head wrap">
+      <h1 class="display page-head__title" tabindex="-1">{t('cart.title')}</h1>
+    </section>
+  </div>
+
+  <main class="cart wrap" data-cart>
+    <script type="application/json" data-catalog set:html={JSON.stringify(catalog)} />
+    <script type="application/json" data-strings set:html={JSON.stringify(strings)} />
+
+    <noscript><p class="cart__notice">{t('cart.noscript')}</p></noscript>
+    <p class="cart__notice" data-cart-notice role="status" hidden>{t('cart.unavailable')}</p>
+
+    <div class="cart__empty" data-cart-empty hidden>
+      <p>{t('cart.empty')}</p>
+      <a class="btn btn--big" href={shopPath(lang)}>{t('cart.emptyCta')} <span aria-hidden="true">→</span></a>
+    </div>
+
+    <div class="cart__layout" data-cart-full hidden>
+      <ul class="cart__lines" data-cart-lines aria-label={t('cart.title')}></ul>
+
+      <aside class="cart__summary" aria-labelledby="cart-summary-title">
+        <h2 id="cart-summary-title" class="cart__summary-title">{t('cart.summary')}</h2>
+        <dl class="cart__total">
+          <dt>{t('cart.subtotal')}</dt>
+          <dd data-cart-subtotal></dd>
+        </dl>
+        <p class="small">{t('cart.shipping')}</p>
+        <button type="button" class="btn btn--big cart__checkout" disabled aria-describedby="checkout-note">
+          {t('cart.checkout')}
+        </button>
+        <p class="small" id="checkout-note">
+          {t('cart.checkoutNote')} <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
+        </p>
+        <a class="link" href={shopPath(lang)}><span aria-hidden="true">←</span> {t('cart.continue')}</a>
+      </aside>
+    </div>
+  </main>
+
+  <Footer lang={lang} />
+
+  <script>
+    import { initCartPage } from '../../scripts/cart-page';
+    initCartPage();
+  </script>
+</Layout>

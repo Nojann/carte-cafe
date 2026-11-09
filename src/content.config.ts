@@ -62,14 +62,18 @@ const cafes = defineCollection({
         z.object({
           niveau: z.enum(['claire', 'moyenne', 'foncee']),
           usage: z.enum(['filtre', 'espresso', 'omni']),
-          lien: urls,
-          prix: z
-            .object({
-              montant: z.number().positive(),
-              devise: z.string().length(3),
-              poids_g: z.number().int().positive(),
+          // Page produit sur l'ancien site (plus utilisée par les boutons : la boutique est interne).
+          lien: urls.optional(),
+          // Décision du 6 nov. : CHF uniquement.
+          devise: z.literal('CHF').default('CHF'),
+          // Formats vendus (250 g, 500 g, 1 kg…), du plus petit au plus grand.
+          formats: z
+            .array(z.object({ poids_g: z.number().int().positive(), montant: z.number().positive() }))
+            .min(1)
+            .refine((f) => new Set(f.map((x) => x.poids_g)).size === f.length, {
+              message: 'Deux formats ont le même poids.',
             })
-            .optional(),
+            .transform((f) => [...f].sort((a, b) => a.poids_g - b.poids_g)),
           disponible: z.boolean(),
         }),
       )

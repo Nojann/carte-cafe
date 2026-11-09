@@ -1,0 +1,52 @@
+---
+// Barre du haut commune à toutes les pages : logo, navigation, panier, langues.
+import { languages, langs, useTranslations, type Lang } from '../i18n/ui';
+import { site } from '../site.config';
+import { withBase, homePath, shopPath, cartPath } from '../lib/paths';
+
+interface Props {
+  lang: Lang;
+  /** Chemin de la page sans la langue (`/`, `/boutique/`, `/panier/`) : sert au sélecteur de langue. */
+  path?: string;
+}
+const { lang, path = '/' } = Astro.props;
+const t = useTranslations(lang);
+// Sur l'accueil, ancres locales (gérées par la carte) ; ailleurs, retour vers l'accueil.
+const home = path === '/' ? '' : homePath(lang);
+---
+
+<header class="topbar wrap">
+  <a class="brand" href={homePath(lang)}>
+    <img class="brand__logo" src={withBase('/images/logo.avif')} alt={site.brand} width="154" height="154" />
+  </a>
+  <nav class="topbar__nav" aria-label="Navigation">
+    <a href={`${home}#carte`}>{t('nav.map')}</a>
+    <a href={`${home}#demarche`}>{t('nav.approach')}</a>
+    <a href={shopPath(lang)} aria-current={path === '/boutique/' ? 'page' : undefined}>{t('nav.shop')}</a>
+  </nav>
+  <a
+    class="cart-link"
+    href={cartPath(lang)}
+    data-cart-link
+    data-label={t('cart.count')}
+    aria-label={t('cart.count', { n: 0 })}
+    aria-current={path === '/panier/' ? 'page' : undefined}
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 4h2.5l2.2 10.5a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1L21 8H6.3" />
+      <circle cx="9.5" cy="19.5" r="1.4" />
+      <circle cx="17" cy="19.5" r="1.4" />
+    </svg>
+    <span class="cart-link__label">{t('cart.link')}</span>
+    <span class="cart-link__count" data-cart-count hidden>0</span>
+  </a>
+  <nav class="langs" aria-label={t('nav.language')}>
+    {
+      langs.map((l) => (
+        <a href={withBase(`/${l}${path}`)} hreflang={l} lang={l} data-lang-link aria-current={l === lang ? 'true' : undefined}>
+          <abbr title={languages[l]}>{l.toUpperCase()}</abbr>
+        </a>
+      ))
+    }
+  </nav>
+</header>

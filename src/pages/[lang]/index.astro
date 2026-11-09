@@ -6,9 +6,11 @@ import RegionSheet from '../../components/RegionSheet.astro';
 import PlaceSheet from '../../components/PlaceSheet.astro';
 import RoasterySheet from '../../components/RoasterySheet.astro';
 import Approach from '../../components/Approach.astro';
-import { getData, countryName, buyUrl, mainRoast } from '../../lib/cafes';
-import { languages, langs, useTranslations, type Lang } from '../../i18n/ui';
-import { site } from '../../site.config';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { getData, countryName, quickItem } from '../../lib/cafes';
+import { productJsonLd } from '../../lib/jsonld';
+import { langs, useTranslations, type Lang } from '../../i18n/ui';
 import { withBase } from '../../lib/paths';
 
 export function getStaticPaths() {
@@ -25,27 +27,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: t('map.title'),
-  itemListElement: cafes.map((c, i) => ({
-    '@type': 'ListItem',
-    position: i + 1,
-    item: {
-      '@type': 'Product',
-      name: c.nom[lang],
-      description: c.histoire?.[lang] ?? c.notes[lang].join(', '),
-      brand: { '@type': 'Brand', name: site.brand },
-      countryOfOrigin: countryName(c.pays, lang),
-      offers: c.torrefactions
-        .filter((r) => r.prix)
-        .map((r) => ({
-          '@type': 'Offer',
-          name: t(`roast.${r.niveau}`),
-          price: r.prix!.montant,
-          priceCurrency: r.prix!.devise,
-          availability: `https://schema.org/${r.disponible ? 'InStock' : 'OutOfStock'}`,
-          url: buyUrl(c, r, lang),
-        })),
-    },
-  })),
+  itemListElement: cafes.map((c, i) => ({ '@type': 'ListItem', position: i + 1, item: productJsonLd(c, lang, Astro.site) })),
 };
 ---
 
@@ -54,25 +36,7 @@ const jsonLd = {
   <link slot="head" rel="preload" as="image" href={withBase('/video/video-bandeau-poster.webp')} type="image/webp" fetchpriority="high" />
 
   <div class="top">
-    <header class="topbar wrap">
-      <a class="brand" href={withBase(`/${lang}/`)}>
-        <img class="brand__logo" src={withBase('/images/logo.avif')} alt={site.brand} width="154" height="154" />
-      </a>
-      <nav class="topbar__nav" aria-label="Navigation">
-        <a href="#carte">{t('nav.map')}</a>
-        <a href="#demarche">{t('nav.approach')}</a>
-        <a href={site.shopUrl[lang]}>{t('nav.shop')}</a>
-      </nav>
-      <nav class="langs" aria-label={t('nav.language')}>
-        {
-          langs.map((l) => (
-            <a href={withBase(`/${l}/`)} hreflang={l} lang={l} data-lang-link aria-current={l === lang ? 'true' : undefined}>
-              <abbr title={languages[l]}>{l.toUpperCase()}</abbr>
-            </a>
-          ))
-        }
-      </nav>
-    </header>
+    <Header lang={lang} />
 
     <section class="hero wrap">
       <div class="hero__text">
@@ -199,9 +163,16 @@ const jsonLd = {
                         {t('list.show')}
                       </a>
                       {c.disponible ? (
-                        <a href={buyUrl(c, mainRoast(c), lang)} class="link link--strong" data-buy={c.slug}>
+                        <button
+                          type="button"
+                          class="link link--strong link--button"
+                          data-add-to-cart
+                          data-item={quickItem(c)}
+                          data-name={c.nom[lang]}
+                          data-added={t('shop.added')}
+                        >
                           {t('sheet.buy')}
-                        </a>
+                        </button>
                       ) : (
                         <span class="badge badge--soldout">{t('sheet.soldOut')}</span>
                       )}
@@ -218,18 +189,7 @@ const jsonLd = {
     <Approach lang={lang} />
   </main>
 
-  <footer class="footer">
-    <div class="wrap footer__inner">
-      <p class="brand">{site.brand}</p>
-      <ul>
-        <li><a href={site.shopUrl[lang]}>{t('nav.shop')}</a></li>
-        <li><a href={`mailto:${site.contactEmail}`}>{t('footer.contact')}</a></li>
-        <li><a href={site.instagram}>Instagram</a></li>
-        <li><a href="#">{t('footer.legal')}</a></li>
-      </ul>
-      <p class="small">{t('footer.examples')}</p>
-    </div>
-  </footer>
+  <Footer lang={lang} />
 
   <script>
     import { initExplorer } from '../../scripts/explorer';

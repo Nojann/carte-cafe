@@ -1,0 +1,146 @@
+---
+// Boutique : un produit par café, choix de la torréfaction et du format, ajout au panier.
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import {
+  getData,
+  countryName,
+  flagDataUri,
+  formatAltitude,
+  formatPrice,
+  formatWeight,
+  mainRoast,
+  offersOf,
+  photoExists,
+  pickPhoto,
+} from '../../lib/cafes';
+import { productJsonLd } from '../../lib/jsonld';
+import { langs, useTranslations, type Lang } from '../../i18n/ui';
+import { site } from '../../site.config';
+import { withBase, homePath } from '../../lib/paths';
+
+export function getStaticPaths() {
+  return langs.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const { regions, cafes } = await getData();
+const groups = regions
+  .map((region) => ({ region, cafes: cafes.filter((c) => c.region === region.slug) }))
+  .filter((g) => g.cafes.length > 0);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: t('shop.title'),
+  itemListElement: cafes.map((c, i) => ({ '@type': 'ListItem', position: i + 1, item: productJsonLd(c, lang, Astro.site) })),
+};
+---
+
+<Layout
+  lang={lang}
+  path="/boutique/"
+  title={t('meta.shop.title', { brand: site.brand })}
+  description={t('meta.shop.description')}
+>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="top top--page">
+    <Header lang={lang} path="/boutique/" />
+    <section class="page-head wrap">
+      <h1 class="display page-head__title">{t('shop.title')}</h1>
+      <p class="page-head__intro">{t('shop.intro')}</p>
+    </section>
+  </div>
+
+  <main class="shop">
+    <div class="wrap">
+      {
+        groups.map(({ region, cafes }) => (
+          <section class="shop__group" aria-labelledby={`shop-${region.slug}`}>
+            <h2 class="catalog__region" id={`shop-${region.slug}`}>{region.nom}</h2>
+            <ul class="shop-grid">
+              {cafes.map((c) => {
+                const photo = pickPhoto(c, region);
+                const main = mainRoast(c);
+                const sizes = [...new Set(c.torrefactions.flatMap((r) => r.formats.map((f) => f.poids_g)))].sort((a, b) => a - b);
+                const origin = [countryName(c.pays, lang), region.nom, c.localite].filter(Boolean).join(' · ');
+                const facts = [c.process && t(`process.${c.process}`), c.altitude && formatAltitude(c.altitude, lang)].filter(Boolean);
+                return (
+                  <li class:list={['product', { 'is-soldout': !c.disponible }]} id={c.slug}>
+                    <figure class="product__photo">
+                      {photoExists(photo.src) ? (
+                        <img src={withBase(photo.src)} alt={photo.alt[lang]} loading="lazy" decoding="async" width="800" height="500" />
+                      ) : (
+                        <img class="product__flag" src={flagDataUri(c.pays)} alt={photo.alt[lang]} width="800" height="600" />
+                      )}
+                      {!c.disponible && <span class="badge badge--soldout">{t('sheet.soldOut')}</span>}
+                    </figure>
+                    <div class="product__body">
+                      <p class="card__origin">{origin}</p>
+                      <h3 class="product__title">{c.nom[lang]}</h3>
+                      <p class="product__notes">{c.notes[lang].join(' · ')}</p>
+                      {facts.length > 0 && <p class="product__facts">{facts.join(' · ')}</p>}
+
+                      {c.disponible && (
+                        <form
+                          class="product__form"
+                          data-product={c.slug}
+                          data-name={c.nom[lang]}
+                          data-added={t('shop.added')}
+                          data-offers={offersOf(c, lang)}
+                        >
+                          {c.torrefactions.length > 1 ? (
+                            <fieldset class="picker">
+                              <legend>{t('shop.roast')}</legend>
+                              {c.torrefactions.map((r) => (
+                                <label class="picker__opt">
+                                  <input type="radio" name="roast" value={r.niveau} checked={r === main} disabled={!r.disponible} />
+                                  <span>
+                                    {t(`roast.${r.niveau}`)}
+                                    <small>{r.disponible ? t(`usage.${r.usage}`) : t('sheet.soldOut')}</small>
+                                  </span>
+                                </label>
+                              ))}
+                            </fieldset>
+                          ) : (
+                            <p class="product__roast">
+                              <input type="hidden" name="roast" value={main.niveau} />
+                              <strong>{t(`roast.${main.niveau}`)}</strong> · {t(`usage.${main.usage}`)}
+                            </p>
+                          )}
+                          <fieldset class="picker">
+                            <legend>{t('shop.size')}</legend>
+                            {sizes.map((g) => (
+                              <label class="picker__opt">
+                                <input type="radio" name="size" value={g} checked={g === main.formats[0].poids_g} />
+                                <span>{formatWeight(g, lang)}</span>
+                              </label>
+                            ))}
+                          </fieldset>
+                          <div class="product__buy">
+                            <p class="price">
+                              <strong data-price>{formatPrice(main.formats[0].montant, main.devise, lang)}</strong>
+                            </p>
+                            <button type="submit" class="btn">{t('shop.add')}</button>
+                          </div>
+                        </form>
+                      )}
+                      <a class="link product__map" href={`${homePath(lang)}#${c.slug}`}>
+                        {t('shop.seeOnMap')} <span aria-hidden="true">→</span>
+                      </a>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </main>
+
+  <Footer lang={lang} />
+</Layout>

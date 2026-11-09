@@ -203,3 +203,14 @@ Aujourd'hui, la saisie se fait dans un fichier par café et demande une personne
 | 8 | Légal | Rédaction des mentions légales, adresse de contact, Instagram |
 | 9 | Organisation | Responsable des mises à jour et du suivi des ventes |
 | 10 | Mise en ligne | Nom de domaine définitif (actuellement une adresse GitHub provisoire) |
+
+## Boutique et panier
+
+> Ajouté le 9 novembre 2026.
+
+- **Page boutique** (`/fr/boutique/`, `/en/…`, `/es/…`) : un produit par café, choix de la torréfaction et du format (250 g, 500 g, 1 kg), bouton « Ajouter au panier ».
+- **Ajout depuis la carte** : les boutons « Acheter » des fiches café, des fiches région et de la liste « Tous nos cafés » ajoutent directement au panier (fiche café : format au choix ; ailleurs : torréfaction principale en 250 g). Ils ne renvoient plus vers l'ancien site.
+- **Page panier** (`/fr/panier/`) : quantités, suppression, sous-total. Le panier est gardé **dans le navigateur du visiteur** (aucune donnée envoyée) et partagé entre les langues.
+- **Paiement** : pas encore branché. Le bouton affiche « Paiement — bientôt disponible » et invite à commander par e-mail.
+
+**À faire :** valider les prix des formats 250 g et 500 g (valeurs d'exemple) ; choisir la solution de paiement.
