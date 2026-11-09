@@ -1,7 +1,8 @@
 ---
 import '@fontsource-variable/bricolage-grotesque';
 import '../styles/global.css';
-import { langs, useTranslations, type Lang } from '../i18n/ui';
+import { langs, defaultLang, useTranslations, type Lang } from '../i18n/ui';
+import { siteJsonLd } from '../lib/jsonld';
 import { withBase, cartPath } from '../lib/paths';
 import { themeCss, themeColors, defaultTheme } from '../data/themes';
 import { site } from '../site.config';
@@ -13,12 +14,26 @@ interface Props {
   description: string;
   /** Chemin de la page sans la langue : `/`, `/boutique/`, `/panier/`, `/contact/`. */
   path?: string;
+  /** Page exclue des moteurs (panier, outils internes) : ni canonical ni hreflang, absente du sitemap. */
   noindex?: boolean;
+  /** Image de partage (réseaux sociaux). Format paysage ≈ 1.91:1, au moins 1200 px de large. */
+  image?: { src: string; width: number; height: number; alt: string };
 }
 const { lang, title, description, path = '/', noindex = false } = Astro.props;
 const t = useTranslations(lang);
 const fullTitle = `${title} — ${site.brand}`;
-const canonical = new URL(withBase(`/${lang}${path}`), Astro.site);
+const pageUrl = (l: Lang) => new URL(withBase(`/${l}${path}`), Astro.site);
+const canonical = pageUrl(lang);
+// x-default : la page racine (choix de la langue) pour l'accueil, la version française ailleurs.
+const xDefault = path === '/' ? new URL(withBase('/'), Astro.site) : pageUrl(defaultLang);
+const ogLocales: Record<Lang, string> = { fr: 'fr_FR', en: 'en_GB', es: 'es_ES' };
+const image = Astro.props.image ?? {
+  src: '/images/couple-producteurs-portrait.webp',
+  width: 2400,
+  height: 1258,
+  alt: t('origins.storyAlt'),
+};
+const imageUrl = new URL(withBase(image.src), Astro.site);
 ---
 
 <!doctype html>
@@ -28,15 +43,32 @@ const canonical = new URL(withBase(`/${lang}${path}`), Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex" />}
-    {langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(withBase(`/${l}${path}`), Astro.site)} />)}
-    {path === '/' && <link rel="alternate" hreflang="x-default" href={new URL(withBase('/'), Astro.site)} />}
+    {
+      noindex ? (
+        <meta name="robots" content="noindex, follow" />
+      ) : (
+        <>
+          <link rel="canonical" href={canonical} />
+          {langs.map((l) => <link rel="alternate" hreflang={l} href={pageUrl(l)} />)}
+          <link rel="alternate" hreflang="x-default" href={xDefault} />
+          <link rel="sitemap" type="application/xml" href={withBase('/sitemap.xml')} />
+        </>
+      )
+    }
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.brand} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:locale" content={{ fr: 'fr_FR', en: 'en_GB', es: 'es_ES' }[lang]} />
+    {!noindex && <meta property="og:url" content={canonical} />}
+    <meta property="og:locale" content={ogLocales[lang]} />
+    {langs.filter((l) => l !== lang).map((l) => <meta property="og:locale:alternate" content={ogLocales[l]} />)}
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:type" content="image/webp" />
+    <meta property="og:image:width" content={String(image.width)} />
+    <meta property="og:image:height" content={String(image.height)} />
+    <meta property="og:image:alt" content={image.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {!noindex && <script type="application/ld+json" set:html={JSON.stringify(siteJsonLd(lang, Astro.site))} />}
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
     <meta name="theme-color" content={themeColors[defaultTheme]} />
     <style is:inline set:html={themeCss}></style>

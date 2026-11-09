@@ -25,8 +25,7 @@ const checks: { label: string; fg: Token; bg: Token }[] = [
 const grade = (r: number) => (r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : r >= 3 ? 'AA gros' : 'Échec');
 ---
 
-<Layout lang="fr" title="Nuanciers" description="Choix du nuancier appliqué au site.">
-  <meta slot="head" name="robots" content="noindex, nofollow" />
+<Layout lang="fr" path="/coolors/" title="Nuanciers" description="Choix du nuancier appliqué au site." noindex>
 
   <main class="coolors wrap">
     <header class="coolors__head">

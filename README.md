@@ -38,6 +38,7 @@ Les anneaux doivent être dans le sens attendu par d3-geo (sens horaire) : si ch
 - Trajet du café (ports, points de passage maritimes, Rhin) : `src/data/route.ts`
 - Textes de l'interface (3 langues) : `src/i18n/ui.ts`
 - Couleurs et typographies : variables en haut de `src/styles/global.css`
+- Référencement (sitemap, balises, données structurées) et conseils SEO : `docs/seo.md`
 - Nom de domaine : `site` dans `astro.config.mjs`
 
 ## Coordonnées de contact (anti-spam)

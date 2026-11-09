@@ -1,8 +1,6 @@
 ## TODO
 
 - Retirer "Données présentées à titre d’exemple."
-- SEO
-- Revoir les messages dans l'onglet
 - Logo :
     - Décomposer le logo pour rendre visible les écritures
     - Cohérence graphique avec le nuancier
@@ -17,6 +15,7 @@
 
 - Système de métriques marketing
 - Newsletter
+- SEO (v2)
 
 
 ## DONE
@@ -30,3 +29,4 @@
 - Version compact de tous nos café ?
 - Ajouter réseaux sociaux
 - Dans le panier proposer un mail de commmande.
+- Revoir les messages dans l'onglet

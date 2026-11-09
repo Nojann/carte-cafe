@@ -28,7 +28,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: t('map.title'),
-  itemListElement: cafes.map((c, i) => ({ '@type': 'ListItem', position: i + 1, item: productJsonLd(c, lang, Astro.site) })),
+  itemListElement: cafes.map((c, i) => ({ '@type': 'ListItem', position: i + 1, item: productJsonLd(c, regionBySlug.get(c.region)!, lang, Astro.site) })),
 };
 ---
 

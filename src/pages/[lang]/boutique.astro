@@ -26,6 +26,7 @@ export function getStaticPaths() {
 const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
 const { regions, cafes } = await getData();
+const regionBySlug = new Map(regions.map((r) => [r.slug, r]));
 const groups = regions
   .map((region) => ({ region, cafes: cafes.filter((c) => c.region === region.slug) }))
   .filter((g) => g.cafes.length > 0);
@@ -34,7 +35,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: t('shop.title'),
-  itemListElement: cafes.map((c, i) => ({ '@type': 'ListItem', position: i + 1, item: productJsonLd(c, lang, Astro.site) })),
+  itemListElement: cafes.map((c, i) => ({ '@type': 'ListItem', position: i + 1, item: productJsonLd(c, regionBySlug.get(c.region)!, lang, Astro.site) })),
 };
 ---
 

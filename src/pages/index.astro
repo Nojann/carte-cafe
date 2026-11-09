@@ -1,8 +1,10 @@
 ---
 // Racine du site : redirige vers la langue du navigateur (repli : français).
-import { langs, defaultLang, languages } from '../i18n/ui';
+import { langs, defaultLang, languages, useTranslations } from '../i18n/ui';
 import { withBase, basePath } from '../lib/paths';
 import { site } from '../site.config';
+
+const t = useTranslations(defaultLang);
 ---
 
 <!doctype html>
@@ -11,7 +13,10 @@ import { site } from '../site.config';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{site.brand}</title>
+    <meta name="description" content={t('meta.description')} />
+    {/* Page de choix de la langue : cible du x-default (docs/seo.md), sans canonical. */}
     {langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(withBase(`/${l}/`), Astro.site)} />)}
+    <link rel="alternate" hreflang="x-default" href={new URL(withBase('/'), Astro.site)} />
     <script is:inline define:vars={{ langs, defaultLang, basePath }}>
       const wanted = (navigator.languages || [navigator.language]).map((l) => l.slice(0, 2).toLowerCase());
       const lang = wanted.find((l) => langs.includes(l)) || defaultLang;
