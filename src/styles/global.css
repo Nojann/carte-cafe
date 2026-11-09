@@ -355,7 +355,6 @@ html:not(.js) .inset__cue { display: none; }
   display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover;
   border: var(--border); border-radius: var(--radius);
 }
-.origins-story__caption { margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.75; }
 .origins-story__body .eyebrow { margin-bottom: 0.75rem; }
 .origins-story__text { margin: 0 0 1rem; font-size: 1.15rem; line-height: 1.6; max-width: 60ch; }
 @media (min-width: 800px) {
@@ -503,19 +502,99 @@ html:not(.js) .sheet__bar { display: none; }
 .card__actions { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
 .card__actions a { white-space: nowrap; }
 
-/* ====== Démarche (bleu plein) ====== */
+/* ====== Démarche (bleu plein) : le chemin du grain en scrollytelling ====== */
 .approach { background: var(--blue); color: var(--white); padding-block: clamp(3rem, 7vw, 6rem); border-top: var(--border); }
 .approach .display { color: var(--yellow); text-shadow: 0.05em 0.05em 0 var(--red); }
 .approach :focus-visible { outline-color: var(--yellow); }
-.approach__grid { display: grid; gap: 2.5rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-top: 2rem; }
+.approach__intro { font-size: clamp(1.1rem, 1.8vw, 1.35rem); max-width: 50ch; margin-top: 1rem; }
 .approach__num {
   display: block; font-family: var(--font-display); font-weight: 800; font-size: clamp(3.5rem, 7vw, 5.5rem); line-height: 1;
   color: var(--yellow); margin-bottom: 0.5rem;
 }
-.approach__item:nth-child(2) .approach__num { color: var(--pink); }
-.approach__item:nth-child(3) .approach__num { color: var(--turquoise); }
+.journey__step:nth-child(2) .approach__num { color: var(--pink); }
+.journey__step:nth-child(3) .approach__num { color: var(--turquoise); }
+.journey__step:nth-child(4) .approach__num { color: var(--green); }
 .approach h3 { font-size: 1.45rem; text-transform: uppercase; }
 .approach p { opacity: 0.92; }
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.journey { margin-top: clamp(2rem, 5vw, 3.5rem); }
+.journey__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(2.5rem, 6vw, 4rem); }
+.journey__figure { margin: 0 0 1.25rem; }
+.journey__figure img, .journey__img {
+  display: block; width: 100%; height: 100%; object-fit: cover; object-position: var(--focus, 50% 50%);
+}
+.journey__figure img {
+  height: auto; aspect-ratio: 4 / 5; max-height: 70svh;
+  border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow) var(--ink);
+}
+.journey__text p { font-size: 1.1rem; line-height: 1.65; max-width: 46ch; }
+.journey__cta { margin-top: 0.5rem; }
+.journey__media { display: none; }
+
+/* Grand écran avec JS : photo collante qui suit l'étape lue. */
+@media (min-width: 900px) {
+  html.js .journey {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(2.5rem, 5vw, 5rem); align-items: start;
+  }
+  html.js .journey__media {
+    display: flex; flex-direction: column; gap: 1rem;
+    position: sticky; top: 8vh; height: 84vh;
+  }
+  html.js .journey__frame {
+    position: relative; flex: 1; overflow: hidden; background: var(--ink);
+    border: var(--border); border-radius: var(--radius); box-shadow: var(--shadow) var(--ink);
+  }
+  html.js .journey__img {
+    position: absolute; inset: 0; opacity: 0; transform: scale(1.06);
+    transition: opacity 0.7s var(--ease), transform 1.4s var(--ease);
+  }
+  html.js .journey__img.is-active { opacity: 1; transform: scale(1); }
+  html.js .journey__counter {
+    position: absolute; left: 1rem; bottom: 1rem; margin: 0; padding: 0.3em 0.9em; border-radius: 999px;
+    background: var(--yellow); color: var(--ink); border: var(--border);
+    font-family: var(--font-display); font-weight: 800; font-variant-numeric: tabular-nums;
+  }
+
+  /* Frise : trait qui se remplit + 5 pastilles numérotées. */
+  html.js .journey__progress {
+    position: relative; list-style: none; margin: 0; padding: 0;
+    display: flex; justify-content: space-between;
+  }
+  html.js .journey__progress::before,
+  html.js .journey__progress::after {
+    content: ''; position: absolute; left: 1.25rem; right: 1.25rem; top: 50%; height: 3px; translate: 0 -50%;
+    background: color-mix(in srgb, var(--white) 30%, transparent);
+  }
+  html.js .journey__progress::after {
+    background: var(--yellow); transform-origin: left; transform: scaleX(var(--progress, 0));
+    transition: transform 0.6s var(--ease);
+  }
+  html.js .journey__progress li { position: relative; z-index: 1; }
+  .journey__dot {
+    display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; cursor: pointer;
+    border: var(--border); background: var(--blue); color: var(--white);
+    font: 800 0.85rem/1 var(--font-display);
+    transition: background 0.3s var(--ease), color 0.3s var(--ease), transform 0.3s var(--ease);
+  }
+  .journey__dot:hover { transform: scale(1.1); }
+  .journey__dot.is-done { background: var(--white); color: var(--ink); }
+  .journey__dot.is-active { background: var(--yellow); color: var(--ink); transform: scale(1.15); }
+
+  html.js .journey__figure { display: none; }
+  html.js .journey__steps { gap: 0; }
+  html.js .journey__step {
+    min-height: 80vh; display: flex; align-items: center;
+    opacity: 0.35; transition: opacity 0.5s var(--ease);
+  }
+  html.js .journey__step:first-child { min-height: 60vh; }
+  html.js .journey__step:last-child { min-height: 84vh; }
+  html.js .journey__step.is-active { opacity: 1; }
+}
 
 /* ====== Pied de page ====== */
 .footer { border-top: var(--border); background: var(--ink); color: var(--white); padding-block: 2.5rem; }

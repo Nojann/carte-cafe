@@ -24,9 +24,8 @@ const fr = {
   'origins.eyebrow': 'Notre histoire',
   'origins.story':
     'Café La Casita, c’est d’abord La Casita del Abuelo : une histoire de famille, de transmission et d’attachement à la terre. Tout commence à Tangua, dans le Nariño, au sud de la Colombie. La famille Bastidas y perpétue les gestes agricoles transmis par le grand-père, l’« Abuelo » : un savoir-faire authentique, au cœur de la culture du café colombien.',
-  'origins.caption': 'Chargement de la récolte à la ferme familiale, Tangua (Nariño)',
   'origins.cta': 'Voir Nariño sur la carte',
-  'origins.storyAlt': 'Producteurs chargeant des sacs de café sur un cheval à la ferme',
+  'origins.storyAlt': 'Portrait d’un couple de producteurs de café, une vallée verdoyante en arrière-plan',
   'map.count': '{n} cafés, {r} régions',
   'map.roastery': 'Notre torréfaction · {city}',
   'map.overview': 'Vue d’ensemble',
@@ -93,15 +92,30 @@ const fr = {
   'list.title': 'Tous nos cafés',
   'list.show': 'Voir sur la carte',
   'approach.title': 'Notre démarche',
-  'approach.1.title': 'Des relations directes', // EXEMPLE
+  // EXEMPLE — textes à relire
+  'approach.intro': 'De la cerise cueillie à Tangua jusqu’à votre tasse : suivez le chemin du grain, étape par étape.',
+  'approach.step': 'Étape {n} sur {total}',
+  'approach.1.title': 'La cueillette à la main',
   'approach.1.text':
-    'Nous achetons autant que possible auprès des mêmes producteurs, saison après saison, pour construire une relation dans la durée.',
-  'approach.2.title': 'Une traçabilité complète', // EXEMPLE
+    'Sur les pentes du Nariño, la famille Bastidas cueille les cerises une à une. Seules les plus mûres sont récoltées, en plusieurs passages au fil de la saison.',
+  'approach.1.alt': 'Mains cueillant des cerises de café rouges sur la branche',
+  'approach.2.title': 'Le séchage et le tri',
   'approach.2.text':
-    'Pour chaque café, nous savons de quelle ferme ou coopérative il vient, à quelle altitude il a poussé et comment il a été traité.',
-  'approach.3.title': 'Torréfié pour révéler l’origine', // EXEMPLE
+    'Dépulpées puis séchées lentement au soleil, les cerises révèlent leur trésor : le grain vert. Chaque lot est trié à la main pour écarter les défauts.',
+  'approach.2.alt': 'Mains tenant des cerises séchées et des grains de café verts',
+  'approach.3.title': 'De la ferme à la route',
   'approach.3.text':
-    'Nos profils de torréfaction cherchent à mettre en valeur le terroir de chaque café plutôt qu’à le masquer.',
+    'Les sacs de grains verts descendent de la ferme à dos de cheval, comme au temps de l’Abuelo, avant de prendre la route puis la mer.',
+  'approach.3.alt': 'Producteur et cheval chargé de sacs de café devant la ferme',
+  'approach.4.title': 'La torréfaction',
+  'approach.4.text':
+    'Arrivés en Suisse, les grains sont torréfiés en petits lots. Pour chaque café, nous ajustons un profil qui révèle son terroir plutôt que de le masquer.',
+  'approach.4.alt': 'Torréfacteur à café, grains en cours de torréfaction dans la fenêtre de la cuve',
+  'approach.4.cta': 'Voir notre torréfaction sur la carte',
+  'approach.5.title': 'Dans votre tasse',
+  'approach.5.text':
+    'Il ne reste plus qu’à infuser. Dans chaque tasse, le goût d’une terre, d’une famille et d’un savoir-faire transmis de génération en génération.',
+  'approach.5.alt': 'Tasse de café fumante posée devant la plantation',
   'footer.contact': 'Contact',
   'footer.legal': 'Mentions légales',
   'footer.examples': 'Données présentées à titre d’exemple.',
@@ -134,9 +148,8 @@ const en: Dict = {
   'origins.eyebrow': 'Our story',
   'origins.story':
     'Café La Casita began as La Casita del Abuelo: a family story of knowledge passed down and of deep attachment to the land. It all starts in Tangua, in Nariño, in southern Colombia. There, the Bastidas family carries on the farming practices passed down by the grandfather, the “Abuelo”: authentic craftsmanship at the heart of Colombian coffee culture.',
-  'origins.caption': 'Loading the harvest at the family farm, Tangua (Nariño)',
   'origins.cta': 'See Nariño on the map',
-  'origins.storyAlt': 'Farmers loading sacks of coffee onto a horse at the farm',
+  'origins.storyAlt': 'Portrait of a coffee-farming couple with a green valley in the background',
   'map.count': '{n} coffees, {r} regions',
   'map.roastery': 'Our roastery · {city}',
   'map.overview': 'Overview',
@@ -203,15 +216,29 @@ const en: Dict = {
   'list.title': 'All our coffees',
   'list.show': 'Show on map',
   'approach.title': 'Our approach',
-  'approach.1.title': 'Direct relationships',
+  'approach.intro': 'From the cherry picked in Tangua to your cup: follow the bean’s journey, step by step.',
+  'approach.step': 'Step {n} of {total}',
+  'approach.1.title': 'Picked by hand',
   'approach.1.text':
-    'Whenever we can, we buy from the same producers season after season, to build long-term relationships.',
-  'approach.2.title': 'Full traceability',
+    'On the slopes of Nariño, the Bastidas family picks the cherries one by one. Only the ripest are harvested, in several passes over the season.',
+  'approach.1.alt': 'Hands picking red coffee cherries from the branch',
+  'approach.2.title': 'Drying and sorting',
   'approach.2.text':
-    'For every coffee, we know which farm or cooperative it comes from, the altitude it grew at and how it was processed.',
-  'approach.3.title': 'Roasted to reveal origin',
+    'Pulped, then slowly sun-dried, the cherries reveal their treasure: the green bean. Each lot is sorted by hand to remove defects.',
+  'approach.2.alt': 'Hands holding dried cherries and green coffee beans',
+  'approach.3.title': 'From farm to road',
   'approach.3.text':
-    'Our roast profiles aim to highlight each coffee’s terroir rather than mask it.',
+    'Sacks of green beans come down from the farm on horseback, as in the Abuelo’s day, before taking the road and then the sea.',
+  'approach.3.alt': 'Farmer and a horse loaded with coffee sacks in front of the farm',
+  'approach.4.title': 'Roasting',
+  'approach.4.text':
+    'Once in Switzerland, the beans are roasted in small batches. For each coffee, we fine-tune a profile that reveals its terroir rather than masking it.',
+  'approach.4.alt': 'Coffee roaster with beans roasting behind the drum window',
+  'approach.4.cta': 'See our roastery on the map',
+  'approach.5.title': 'In your cup',
+  'approach.5.text':
+    'All that’s left is to brew. In every cup, the taste of a land, a family and know-how handed down through generations.',
+  'approach.5.alt': 'Steaming cup of coffee in front of the plantation',
   'footer.contact': 'Contact',
   'footer.legal': 'Legal notice',
   'footer.examples': 'Data shown for illustration purposes.',
@@ -242,9 +269,8 @@ const es: Dict = {
   'origins.eyebrow': 'Nuestra historia',
   'origins.story':
     'Café La Casita es ante todo La Casita del Abuelo: una historia de familia, de transmisión y de apego a la tierra. Todo comienza en Tangua, en Nariño, al sur de Colombia. Allí, la familia Bastidas mantiene vivas las labores del campo heredadas del abuelo: un saber hacer auténtico, en el corazón de la cultura del café colombiano.',
-  'origins.caption': 'Cargando la cosecha en la finca familiar, Tangua (Nariño)',
   'origins.cta': 'Ver Nariño en el mapa',
-  'origins.storyAlt': 'Productores cargando sacos de café en un caballo en la finca',
+  'origins.storyAlt': 'Retrato de una pareja de caficultores con un valle verde al fondo',
   'map.count': '{n} cafés, {r} regiones',
   'map.roastery': 'Nuestra tostaduría · {city}',
   'map.overview': 'Vista general',
@@ -311,15 +337,29 @@ const es: Dict = {
   'list.title': 'Todos nuestros cafés',
   'list.show': 'Ver en el mapa',
   'approach.title': 'Nuestro enfoque',
-  'approach.1.title': 'Relaciones directas',
+  'approach.intro': 'De la cereza cosechada en Tangua hasta su taza: siga el camino del grano, paso a paso.',
+  'approach.step': 'Etapa {n} de {total}',
+  'approach.1.title': 'Cosecha a mano',
   'approach.1.text':
-    'Siempre que podemos, compramos a los mismos productores temporada tras temporada, para construir relaciones duraderas.',
-  'approach.2.title': 'Trazabilidad completa',
+    'En las laderas de Nariño, la familia Bastidas recoge las cerezas una a una. Solo se cosechan las más maduras, en varias pasadas a lo largo de la temporada.',
+  'approach.1.alt': 'Manos recogiendo cerezas de café rojas de la rama',
+  'approach.2.title': 'Secado y selección',
   'approach.2.text':
-    'De cada café sabemos de qué finca o cooperativa viene, a qué altitud creció y cómo fue procesado.',
-  'approach.3.title': 'Tostado para revelar el origen',
+    'Despulpadas y secadas lentamente al sol, las cerezas revelan su tesoro: el grano verde. Cada lote se selecciona a mano para descartar defectos.',
+  'approach.2.alt': 'Manos sosteniendo cerezas secas y granos de café verde',
+  'approach.3.title': 'De la finca al camino',
   'approach.3.text':
-    'Nuestros perfiles de tueste buscan resaltar el terroir de cada café en lugar de ocultarlo.',
+    'Los sacos de café verde bajan de la finca a lomo de caballo, como en tiempos del Abuelo, antes de tomar la carretera y luego el mar.',
+  'approach.3.alt': 'Productor y caballo cargado de sacos de café frente a la finca',
+  'approach.4.title': 'El tostado',
+  'approach.4.text':
+    'Ya en Suiza, los granos se tuestan en pequeños lotes. Para cada café ajustamos un perfil que revela su terroir en lugar de ocultarlo.',
+  'approach.4.alt': 'Tostadora de café con granos tostándose tras la ventana del tambor',
+  'approach.4.cta': 'Ver nuestra tostaduría en el mapa',
+  'approach.5.title': 'En su taza',
+  'approach.5.text':
+    'Solo queda preparar. En cada taza, el sabor de una tierra, de una familia y de un saber hacer transmitido de generación en generación.',
+  'approach.5.alt': 'Taza de café humeante frente a la plantación',
   'footer.contact': 'Contacto',
   'footer.legal': 'Aviso legal',
   'footer.examples': 'Datos mostrados a modo de ejemplo.',

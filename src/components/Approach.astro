@@ -1,0 +1,116 @@
+---
+// « Notre démarche » : le chemin du grain en 5 étapes, raconté au défilement.
+// Sans JS ou sur mobile, chaque étape affiche sa propre photo. Sur grand écran
+// avec JS, une photo collante (sticky) change selon l'étape lue (scripts/approach.ts).
+import { useTranslations, type Lang, type UIKey } from '../i18n/ui';
+import { withBase } from '../lib/paths';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+type Step = { img: string; w: number; h: number; full?: boolean; focus?: string };
+const steps: Step[] = [
+  { img: 'mains-cueillette-cerises-cafe', w: 1920, h: 2400, full: true },
+  { img: 'mains-cerises-sechees-grains-verts', w: 1855, h: 2400, full: true },
+  { img: 'producteur-cheval-sacs-cafe-ferme', w: 1600, h: 1066, full: true, focus: '58% 50%' },
+  // Seule une version 318×385 existe pour l'instant.
+  { img: 'torrefacteur', w: 318, h: 385 },
+  { img: 'tasse-cafe-fumante-plantation', w: 1921, h: 2400, full: true },
+];
+
+const srcOf = (s: Step) => withBase(`/images/${s.img}-800.webp`);
+const srcsetOf = (s: Step) =>
+  s.full ? `${srcOf(s)} 800w, ${withBase(`/images/${s.img}.webp`)} ${s.w}w` : undefined;
+// Clé de texte d'une étape (index 0 → approach.1.*).
+const key = (i: number, field: 'title' | 'text' | 'alt') => `approach.${i + 1}.${field}` as UIKey;
+const pad = (n: number) => String(n).padStart(2, '0');
+const total = steps.length;
+---
+
+<section class="approach" id="demarche" aria-labelledby="demarche-title">
+  <div class="wrap">
+    <h2 id="demarche-title" class="display">{t('approach.title')}</h2>
+    <p class="approach__intro">{t('approach.intro')}</p>
+
+    <div class="journey" data-journey style={`--steps: ${total}`}>
+      <div class="journey__media">
+        <div class="journey__frame" aria-hidden="true">
+          {
+            steps.map((s, i) => (
+              <img
+                class:list={['journey__img', { 'is-active': i === 0 }]}
+                data-journey-img
+                src={srcOf(s)}
+                srcset={srcsetOf(s)}
+                sizes="(min-width: 900px) 45vw, 100vw"
+                width={s.w}
+                height={s.h}
+                loading="lazy"
+                decoding="async"
+                alt=""
+                style={s.focus ? `--focus: ${s.focus}` : undefined}
+              />
+            ))
+          }
+          <p class="journey__counter" data-journey-counter>{pad(1)} / {pad(total)}</p>
+        </div>
+        <ol class="journey__progress">
+          {
+            steps.map((_, i) => (
+              <li>
+                <button
+                  type="button"
+                  class:list={['journey__dot', { 'is-active': i === 0 }]}
+                  data-journey-dot={i}
+                  aria-label={`${t('approach.step', { n: i + 1, total })} : ${t(key(i, 'title'))}`}
+                  aria-current={i === 0 ? 'step' : undefined}
+                >
+                  {pad(i + 1)}
+                </button>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <ol class="journey__steps">
+        {
+          steps.map((s, i) => (
+            <li class:list={['journey__step', { 'is-active': i === 0 }]} data-journey-step={i}>
+              <figure class="journey__figure">
+                <img
+                  src={srcOf(s)}
+                  srcset={srcsetOf(s)}
+                  sizes="100vw"
+                  width={s.w}
+                  height={s.h}
+                  loading="lazy"
+                  decoding="async"
+                  alt={t(key(i, 'alt'))}
+                  style={s.focus ? `--focus: ${s.focus}` : undefined}
+                />
+              </figure>
+              <div class="journey__text">
+                <span class="approach__num" aria-hidden="true">{pad(i + 1)}</span>
+                <h3>
+                  <span class="visually-hidden">{t('approach.step', { n: i + 1, total })} : </span>
+                  {t(key(i, 'title'))}
+                </h3>
+                <p>{t(key(i, 'text'))}</p>
+                {i === 3 && (
+                  <a class="btn btn--ghost journey__cta" href="#torrefaction">
+                    {t('approach.4.cta')} <span aria-hidden="true">→</span>
+                  </a>
+                )}
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+</section>

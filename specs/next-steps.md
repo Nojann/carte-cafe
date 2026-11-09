@@ -1,7 +1,5 @@
 ## TODO
 
-- Ajouter une section "Présentation du projet" photo de la famille et descriptif
-- Ajouter Démarche
 
 - Ajouter colibri
 - Ajouter un bandeau "il nous ont fait confiance" / client.
@@ -24,3 +22,5 @@
 ## DONE
 - Créer un nuancier de couleurs test
 - Ajouter les valeurs réelles des cafés
+- Ajouter une section "Présentation du projet" photo de la famille et descriptif
+- Ajouter Démarche (scrollytelling 5 étapes)
