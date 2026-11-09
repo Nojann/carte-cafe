@@ -45,6 +45,7 @@ const jsonLd = {
 
 <Layout lang={lang} title={t('meta.title')} description={t('meta.description')}>
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <link slot="head" rel="preload" as="image" href={withBase('/video/video-bandeau-poster.webp')} type="image/webp" fetchpriority="high" />
 
   <div class="top">
     <header class="topbar wrap">
@@ -66,14 +67,31 @@ const jsonLd = {
     </header>
 
     <section class="hero wrap">
-      <p class="eyebrow"><span>{t('hero.eyebrow')}</span></p>
-      <h1 class="hero__title">
-        {t('hero.title.a')} <em>{t('hero.title.b')}</em>
-      </h1>
-      <div class="hero__foot">
-        <p class="hero__subtitle">{t('hero.subtitle')}</p>
-        <a class="btn btn--big" href="#carte">{t('hero.cta')} <span aria-hidden="true">↓</span></a>
+      <div class="hero__text">
+        <p class="eyebrow"><span>{t('hero.eyebrow')}</span></p>
+        <h1 class="hero__title">
+          {t('hero.title.a')} <em>{t('hero.title.b')}</em>
+        </h1>
+        <div class="hero__foot">
+          <p class="hero__subtitle">{t('hero.subtitle')}</p>
+          <a class="btn btn--big" href="#carte">{t('hero.cta')} <span aria-hidden="true">↓</span></a>
+        </div>
       </div>
+      <figure class="hero__media" aria-hidden="true">
+        <video
+          class="hero__video"
+          data-hero-video
+          data-src={withBase('/video/video-bandeau.mp4')}
+          poster={withBase('/video/video-bandeau-poster.webp')}
+          width="540"
+          height="960"
+          muted
+          loop
+          playsinline
+          disablepictureinpicture
+          preload="none"
+        ></video>
+      </figure>
     </section>
   </div>
 
@@ -170,6 +188,8 @@ const jsonLd = {
 
   <script>
     import { initExplorer } from '../../scripts/explorer';
+    import { initHeroVideo } from '../../scripts/hero-video';
     initExplorer();
+    initHeroVideo();
   </script>
 </Layout>
