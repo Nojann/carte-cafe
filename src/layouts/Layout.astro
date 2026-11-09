@@ -4,9 +4,11 @@ import '../styles/global.css';
 import { langs, useTranslations, type Lang } from '../i18n/ui';
 import { withBase, cartPath } from '../lib/paths';
 import { themeCss, themeColors, defaultTheme } from '../data/themes';
+import { site } from '../site.config';
 
 interface Props {
   lang: Lang;
+  /** Libellé de la page seul : la marque est ajoutée automatiquement (« Libellé — Marque »). */
   title: string;
   description: string;
   /** Chemin de la page sans la langue : `/`, `/boutique/`, `/panier/`, `/contact/`. */
@@ -15,6 +17,7 @@ interface Props {
 }
 const { lang, title, description, path = '/', noindex = false } = Astro.props;
 const t = useTranslations(lang);
+const fullTitle = `${title} — ${site.brand}`;
 const canonical = new URL(withBase(`/${lang}${path}`), Astro.site);
 ---
 
@@ -23,14 +26,14 @@ const canonical = new URL(withBase(`/${lang}${path}`), Astro.site);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex" />}
     {langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(withBase(`/${l}${path}`), Astro.site)} />)}
     {path === '/' && <link rel="alternate" hreflang="x-default" href={new URL(withBase('/'), Astro.site)} />}
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
+    <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content={{ fr: 'fr_FR', en: 'en_GB', es: 'es_ES' }[lang]} />

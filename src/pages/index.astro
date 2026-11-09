@@ -2,6 +2,7 @@
 // Racine du site : redirige vers la langue du navigateur (repli : français).
 import { langs, defaultLang, languages } from '../i18n/ui';
 import { withBase, basePath } from '../lib/paths';
+import { site } from '../site.config';
 ---
 
 <!doctype html>
@@ -9,7 +10,7 @@ import { withBase, basePath } from '../lib/paths';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Carte des origines</title>
+    <title>{site.brand}</title>
     {langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(withBase(`/${l}/`), Astro.site)} />)}
     <script is:inline define:vars={{ langs, defaultLang, basePath }}>
       const wanted = (navigator.languages || [navigator.language]).map((l) => l.slice(0, 2).toLowerCase());

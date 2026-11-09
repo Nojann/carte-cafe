@@ -5,7 +5,6 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import Contact from '../../components/Contact.astro';
 import { langs, useTranslations, type Lang } from '../../i18n/ui';
-import { site } from '../../site.config';
 
 export function getStaticPaths() {
   return langs.map((lang) => ({ params: { lang } }));
@@ -15,7 +14,7 @@ const lang = Astro.params.lang as Lang;
 const t = useTranslations(lang);
 ---
 
-<Layout lang={lang} path="/contact/" title={t('meta.contact.title', { brand: site.brand })} description={t('meta.contact.description')}>
+<Layout lang={lang} path="/contact/" title={t('meta.contact.title')} description={t('meta.contact.description')}>
   <div class="top top--page">
     <Header lang={lang} path="/contact/" />
     <section class="page-head wrap">

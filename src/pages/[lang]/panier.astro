@@ -7,7 +7,6 @@ import Footer from '../../components/Footer.astro';
 import ContactReveal from '../../components/ContactReveal.astro';
 import { getData, cartCatalog } from '../../lib/cafes';
 import { langs, useTranslations, type Lang } from '../../i18n/ui';
-import { site } from '../../site.config';
 import { contactEmail, contactPhone } from '../../lib/contact';
 import { shopPath, contactPath } from '../../lib/paths';
 
@@ -37,7 +36,7 @@ const strings = {
 <Layout
   lang={lang}
   path="/panier/"
-  title={t('meta.cart.title', { brand: site.brand })}
+  title={t('meta.cart.title')}
   description={t('meta.cart.description')}
   noindex
 >

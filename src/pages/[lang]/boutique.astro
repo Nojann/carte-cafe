@@ -17,7 +17,6 @@ import {
 } from '../../lib/cafes';
 import { productJsonLd } from '../../lib/jsonld';
 import { langs, useTranslations, type Lang } from '../../i18n/ui';
-import { site } from '../../site.config';
 import { withBase, homePath } from '../../lib/paths';
 
 export function getStaticPaths() {
@@ -42,7 +41,7 @@ const jsonLd = {
 <Layout
   lang={lang}
   path="/boutique/"
-  title={t('meta.shop.title', { brand: site.brand })}
+  title={t('meta.shop.title')}
   description={t('meta.shop.description')}
 >
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

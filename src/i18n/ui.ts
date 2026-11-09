@@ -5,7 +5,7 @@ export const langs = Object.keys(languages) as Lang[];
 export const defaultLang: Lang = 'fr';
 
 const fr = {
-  'meta.title': 'D’où viennent nos cafés ? — Carte des origines',
+  'meta.title': 'D’où viennent nos cafés ?',
   'meta.description':
     'Explorez sur une carte du monde l’origine de chacun de nos cafés : pays, région, producteurs, process et notes de dégustation.',
   'nav.map': 'Nos origines',
@@ -91,9 +91,9 @@ const fr = {
   'sheet.per': 'les {g} g',
   'sheet.add': 'Ajouter',
   'sheet.format': 'Format',
-  'meta.shop.title': 'Boutique — {brand}',
+  'meta.shop.title': 'Boutique',
   'meta.shop.description': 'Nos cafés de spécialité de Colombie, torréfiés à Lausanne : choisissez votre torréfaction et votre format.',
-  'meta.cart.title': 'Panier — {brand}',
+  'meta.cart.title': 'Panier',
   'meta.cart.description': 'Votre panier de cafés.',
   'shop.title': 'Boutique',
   'shop.intro': 'Nos cafés de Colombie, torréfiés en petits lots à Lausanne. Choisissez une torréfaction et un format, en grains.',
@@ -154,7 +154,7 @@ const fr = {
   'footer.contact': 'Contact',
   'footer.legal': 'Mentions légales',
   'footer.examples': 'Données présentées à titre d’exemple.',
-  'meta.contact.title': 'Contact — {brand}',
+  'meta.contact.title': 'Contact',
   'meta.contact.description': 'Une question, une commande, un événement ? Écrivez-nous ou venez nous voir au food truck, en Suisse.',
   'contact.title': 'Contact',
   'contact.eyebrow': 'Parlons café',
@@ -194,7 +194,7 @@ const fr = {
 type Dict = Record<keyof typeof fr, string>;
 
 const en: Dict = {
-  'meta.title': 'Where do our coffees come from? — Origins map',
+  'meta.title': 'Where do our coffees come from?',
   'meta.description':
     'Explore on a world map where each of our coffees comes from: country, region, producers, process and tasting notes.',
   'nav.map': 'Our origins',
@@ -280,9 +280,9 @@ const en: Dict = {
   'sheet.per': 'per {g} g',
   'sheet.add': 'Add',
   'sheet.format': 'Size',
-  'meta.shop.title': 'Shop — {brand}',
+  'meta.shop.title': 'Shop',
   'meta.shop.description': 'Our specialty coffees from Colombia, roasted in Lausanne: pick your roast and bag size.',
-  'meta.cart.title': 'Cart — {brand}',
+  'meta.cart.title': 'Cart',
   'meta.cart.description': 'Your coffee cart.',
   'shop.title': 'Shop',
   'shop.intro': 'Our Colombian coffees, roasted in small batches in Lausanne. Pick a roast and a bag size, whole bean.',
@@ -342,7 +342,7 @@ const en: Dict = {
   'footer.contact': 'Contact',
   'footer.legal': 'Legal notice',
   'footer.examples': 'Data shown for illustration purposes.',
-  'meta.contact.title': 'Contact — {brand}',
+  'meta.contact.title': 'Contact',
   'meta.contact.description': 'A question, an order, an event? Write to us or come and see us at the food truck, in Switzerland.',
   'contact.title': 'Contact',
   'contact.eyebrow': 'Let’s talk coffee',
@@ -380,7 +380,7 @@ const en: Dict = {
 };
 
 const es: Dict = {
-  'meta.title': '¿De dónde vienen nuestros cafés? — Mapa de orígenes',
+  'meta.title': '¿De dónde vienen nuestros cafés?',
   'meta.description':
     'Explora en un mapa del mundo el origen de cada uno de nuestros cafés: país, región, productores, proceso y notas de cata.',
   'nav.map': 'Nuestros orígenes',
@@ -466,9 +466,9 @@ const es: Dict = {
   'sheet.per': 'los {g} g',
   'sheet.add': 'Añadir',
   'sheet.format': 'Formato',
-  'meta.shop.title': 'Tienda — {brand}',
+  'meta.shop.title': 'Tienda',
   'meta.shop.description': 'Nuestros cafés de especialidad de Colombia, tostados en Lausana: elija su tueste y su formato.',
-  'meta.cart.title': 'Carrito — {brand}',
+  'meta.cart.title': 'Carrito',
   'meta.cart.description': 'Su carrito de cafés.',
   'shop.title': 'Tienda',
   'shop.intro': 'Nuestros cafés de Colombia, tostados en pequeños lotes en Lausana. Elija un tueste y un formato, en grano.',
@@ -528,7 +528,7 @@ const es: Dict = {
   'footer.contact': 'Contacto',
   'footer.legal': 'Aviso legal',
   'footer.examples': 'Datos mostrados a modo de ejemplo.',
-  'meta.contact.title': 'Contacto — {brand}',
+  'meta.contact.title': 'Contacto',
   'meta.contact.description': '¿Una pregunta, un pedido, un evento? Escríbanos o venga a vernos al food truck, en Suiza.',
   'contact.title': 'Contacto',
   'contact.eyebrow': 'Hablemos de café',
