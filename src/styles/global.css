@@ -1,19 +1,20 @@
 /* ====================================================================
-   Charte « Chiva colombienne » — jaune / bleu / rouge du drapeau,
-   + vert, rose, turquoise de l'art populaire.
+   Charte par défaut « Casita vive » — tons de l'étiquette ravivés.
+   Valeurs identiques au premier thème de src/data/themes.ts.
+   Autres nuanciers : surcharges :root[data-theme="…"] (page /coolors).
    ==================================================================== */
 :root {
-  --yellow: #ffc800;
-  --blue: #0033a0;
-  --red: #e4002b;
-  --green: #00a86b;
-  --pink: #ff4f9a;
-  --turquoise: #00b5c8;
-  --ink: #0b1640;
-  --paper: #fff8e6;
-  --white: #fff;
-  --land: #f4e9d0;
-  --soldout: #8d93a8;
+  --yellow: #E8B630;
+  --blue: #2B4A8B;
+  --red: #B3242B;
+  --green: #7FA046;
+  --pink: #E0675A;
+  --turquoise: #E08A3C;
+  --ink: #2E1A16;
+  --paper: #F6EFE6;
+  --white: #FFFBF5;
+  --land: #EBDDC8;
+  --soldout: #A89F8E;
 
   --border: 3px solid var(--ink);
   --shadow: 6px 6px 0;

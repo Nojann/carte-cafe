@@ -1,5 +1,5 @@
 // Nuanciers disponibles comme thème du site (choix sur la page cachée /coolors).
-// Chaque thème surcharge les 11 tokens couleur de `global.css`. Le premier est le défaut (`:root`).
+// Chaque thème surcharge les 11 tokens couleur de `global.css`. Le premier est le défaut (valeurs de `:root` dans global.css, à garder synchronisées).
 // Ajouter un nuancier = ajouter une entrée ici.
 
 export const tokenRoles = {
@@ -27,9 +27,27 @@ export interface Theme {
 
 export const themes: Theme[] = [
   {
+    id: 'casita-vive',
+    name: 'Casita vive',
+    description: 'Les mêmes teintes que l’étiquette, ravivées : moutarde, rouge cerise franc, vert feuille, corail et orange torréfié sur un crème lumineux.',
+    tokens: {
+      yellow: '#E8B630',
+      blue: '#2B4A8B',
+      red: '#B3242B',
+      green: '#7FA046',
+      pink: '#E0675A',
+      turquoise: '#E08A3C',
+      ink: '#2E1A16',
+      paper: '#F6EFE6',
+      white: '#FFFBF5',
+      land: '#EBDDC8',
+      soldout: '#A89F8E',
+    },
+  },
+  {
     id: 'chiva',
     name: 'Chiva colombienne',
-    description: 'La charte actuelle : jaune, bleu et rouge du drapeau, avec le vert, le rose et le turquoise de l’art populaire.',
+    description: 'L’ancienne charte : jaune, bleu et rouge du drapeau, avec le vert, le rose et le turquoise de l’art populaire.',
     tokens: {
       yellow: '#ffc800',
       blue: '#0033a0',
@@ -60,24 +78,6 @@ export const themes: Theme[] = [
       white: '#F3EEE8',
       land: '#DBD2C9',
       soldout: '#AFA388',
-    },
-  },
-  {
-    id: 'casita-vive',
-    name: 'Casita vive',
-    description: 'Les mêmes teintes que l’étiquette, ravivées : moutarde, rouge cerise franc, vert feuille, corail et orange torréfié sur un crème lumineux.',
-    tokens: {
-      yellow: '#E8B630',
-      blue: '#2B4A8B',
-      red: '#B3242B',
-      green: '#7FA046',
-      pink: '#E0675A',
-      turquoise: '#E08A3C',
-      ink: '#2E1A16',
-      paper: '#F6EFE6',
-      white: '#FFFBF5',
-      land: '#EBDDC8',
-      soldout: '#A89F8E',
     },
   },
 ];
