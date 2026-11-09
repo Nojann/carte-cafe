@@ -1,6 +1,9 @@
 ## TODO
 
 - Ajouter une section "Présentation du projet" photo de la famille et descriptif
+- Ajouter Démarche
+
+- Ajouter colibri
 - Ajouter un bandeau "il nous ont fait confiance" / client.
 - Logo :
     - Décomposer le logo pour rendre visible les écritures

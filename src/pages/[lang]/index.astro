@@ -111,6 +111,28 @@ const jsonLd = {
           <p class="pill">{t('map.count', { n: cafes.length, r: new Set(cafes.map((c) => c.region)).size })}</p>
         </div>
 
+        <div class="origins-story">
+          <figure class="origins-story__figure">
+            <img
+              class="origins-story__img"
+              src={withBase('/images/producteurs-chargement-cheval-sacs-800.webp')}
+              srcset={`${withBase('/images/producteurs-chargement-cheval-sacs-800.webp')} 800w, ${withBase('/images/producteurs-chargement-cheval-sacs.webp')} 1600w`}
+              sizes="(min-width: 800px) 40vw, 100vw"
+              width="1600"
+              height="1066"
+              loading="lazy"
+              decoding="async"
+              alt={t('origins.storyAlt')}
+            />
+            <figcaption class="origins-story__caption">{t('origins.caption')}</figcaption>
+          </figure>
+          <div class="origins-story__body">
+            <p class="eyebrow"><span>{t('origins.eyebrow')}</span></p>
+            <p class="origins-story__text">{t('origins.story')}</p>
+            <a href="#region-narino" class="link link--strong">{t('origins.cta')} <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+
         <p class="explorer__lead" data-lead>{t('map.hint')}</p>
 
         <div class="explorer__body">

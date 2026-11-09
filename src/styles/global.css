@@ -345,6 +345,23 @@ html:not(.js) .inset__cue { display: none; }
 }
 .map__overview[hidden] { display: none; }
 
+/* Récit « histoire de famille » en tête de la section origines */
+.origins-story {
+  display: grid; gap: 1.25rem; margin: 0 0 2.5rem; padding-bottom: 2.5rem;
+  border-bottom: 2px dashed var(--ink);
+}
+.origins-story__figure { margin: 0; }
+.origins-story__img {
+  display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover;
+  border: var(--border); border-radius: var(--radius);
+}
+.origins-story__caption { margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.75; }
+.origins-story__body .eyebrow { margin-bottom: 0.75rem; }
+.origins-story__text { margin: 0 0 1rem; font-size: 1.15rem; line-height: 1.6; max-width: 60ch; }
+@media (min-width: 800px) {
+  .origins-story { grid-template-columns: 2fr 3fr; align-items: center; gap: 2rem; }
+}
+
 /* Panneau de fiche */
 .explorer__panel { min-width: 0; }
 .explorer__hint {
