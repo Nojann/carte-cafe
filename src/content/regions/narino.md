@@ -1,5 +1,5 @@
 ---
-# EXEMPLE — descriptions à réécrire
+# Description : media-originaux/Livret projet café.pdf
 slug: narino
 nom: Nariño
 iso: CO-NAR
@@ -11,7 +11,7 @@ photo:
     es: Productor en su cafetal sobre el valle
 ordre: 3
 description:
-  fr: À la frontière de l'Équateur, des caféiers parmi les plus hauts du pays, jusqu'à 2 300 m. Des nuits fraîches qui donnent des cafés vifs et sucrés.
-  en: On the border with Ecuador, some of the highest coffee trees in the country, up to 2,300 m. Cool nights give bright, sweet coffees.
-  es: En la frontera con Ecuador, algunos de los cafetales más altos del país, hasta 2.300 m. Noches frescas que dan cafés vivos y dulces.
+  fr: Berceau de La Casita del Abuelo, à Tangua. Une région andine de haute altitude, entre 15 et 28 °C, humide, aux sols volcaniques riches, idéale pour un Arabica aux arômes complexes.
+  en: Home of La Casita del Abuelo, in Tangua. A high-altitude Andean region, between 15 and 28 °C, humid, with rich volcanic soils, ideal for Arabica with complex aromas.
+  es: Cuna de La Casita del Abuelo, en Tangua. Una región andina de gran altitud, entre 15 y 28 °C, húmeda y de ricos suelos volcánicos, ideal para un Arábica de aromas complejos.
 ---

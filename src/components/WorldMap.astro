@@ -20,6 +20,7 @@ const placeBySlug = new Map(places.map((p) => [p.slug, p]));
 const regionBySlug = new Map(regions.map((r) => [r.slug, r]));
 const countOf = (slug: string) => {
   const n = cafes.filter((c) => c.region === slug).length;
+  if (n === 0) return t('region.soon');
   return t(n === 1 ? 'region.count.one' : 'region.count.other', { n });
 };
 const pos = (p: { xPct: number; yPct: number }) => `left:${p.xPct}%;top:${p.yPct}%`;
@@ -136,8 +137,7 @@ const side = (p: { xPct: number; yPct: number }, below = 35) => [
               style={`${pos(r.label)};--cx:${r.center.xPct}%;--cy:${r.center.yPct}%`}
               aria-hidden="true"
             >
-              <strong>{regionBySlug.get(r.slug)!.nom}</strong>
-            </span>
+              <strong>{regionBySlug.get(r.slug)!.nom}</strong>            </span>
           ))
         }
 

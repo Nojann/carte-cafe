@@ -108,7 +108,7 @@ const jsonLd = {
       <div class="wrap">
         <div class="section-head">
           <h2 id="carte-title" class="display">{t('map.title')}</h2>
-          <p class="pill">{t('map.count', { n: cafes.length, r: regions.length })}</p>
+          <p class="pill">{t('map.count', { n: cafes.length, r: new Set(cafes.map((c) => c.region)).size })}</p>
         </div>
 
         <p class="explorer__lead" data-lead>{t('map.hint')}</p>
@@ -158,6 +158,11 @@ const jsonLd = {
           regions.map((region) => (
             <div class="catalog__group">
               <h3 class="catalog__region">{region.nom}</h3>
+              {cafesOf(region.slug).length === 0 && (
+                <p class="catalog__soon">
+                  <span class="badge badge--soon">{t('region.soon')}</span> {t('region.soonText')}
+                </p>
+              )}
               <ul class="cards">
                 {cafesOf(region.slug).map((c) => (
                   <li class:list={['card', { 'is-soldout': !c.disponible }]} data-card={c.slug}>

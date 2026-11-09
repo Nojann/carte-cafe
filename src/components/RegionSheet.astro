@@ -10,6 +10,7 @@ interface Props {
 }
 const { lang, region, cafes } = Astro.props;
 const t = useTranslations(lang);
+const soon = cafes.length === 0;
 const count = t(cafes.length === 1 ? 'region.count.one' : 'region.count.other', { n: cafes.length });
 
 /** Prix d'appel : la torréfaction disponible la moins chère ; « dès » si les prix diffèrent. */
@@ -42,7 +43,16 @@ function priceOf(cafe: Cafe) {
   </header>
   {region.description && <p class="sheet__story">{region.description[lang]}</p>}
 
-  <h4 class="region-list__title">{t('region.cafes')} <span class="pill pill--small">{count}</span></h4>
+  {
+    soon ? (
+      <div class="region-soon">
+        <span class="badge badge--soon">{t('region.soon')}</span>
+        <p>{t('region.soonText')}</p>
+      </div>
+    ) : (
+      <h4 class="region-list__title">{t('region.cafes')} <span class="pill pill--small">{count}</span></h4>
+    )
+  }
   <ul class="region-list">
     {
       cafes.map((c) => {
