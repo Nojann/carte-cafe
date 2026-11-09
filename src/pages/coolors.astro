@@ -1,0 +1,190 @@
+---
+// Page cachée (aucun lien, noindex) : choisir le nuancier appliqué à tout le site.
+import Layout from '../layouts/Layout.astro';
+import { themes, tokenRoles, defaultTheme, themeColors, type Token } from '../data/themes';
+import { withBase } from '../lib/paths';
+
+// Contraste WCAG 2.1 entre deux couleurs hex
+const luminance = (hex: string) => {
+  const h = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map((i) => {
+    const c = parseInt(h.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a: string, b: string) => {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+const checks: { label: string; fg: Token; bg: Token }[] = [
+  { label: 'Texte / fond', fg: 'ink', bg: 'paper' },
+  { label: 'Bouton', fg: 'white', bg: 'red' },
+  { label: 'Bandeau', fg: 'ink', bg: 'yellow' },
+];
+const grade = (r: number) => (r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : r >= 3 ? 'AA gros' : 'Échec');
+---
+
+<Layout lang="fr" title="Nuanciers — Carte des origines" description="Choix du nuancier appliqué au site.">
+  <meta slot="head" name="robots" content="noindex, nofollow" />
+
+  <main class="coolors wrap">
+    <header class="coolors__head">
+      <p class="pill">Page interne</p>
+      <h1 class="display">Nuanciers</h1>
+      <p>
+        Choisissez un nuancier : il s’applique tout de suite à tout le site, pour ce navigateur seulement.
+      </p>
+      <p class="coolors__actions">
+        <a class="btn btn--ghost" href={withBase('/fr/')}>Voir le site →</a>
+        <button type="button" class="btn btn--ghost" data-reset>Revenir au thème par défaut</button>
+      </p>
+    </header>
+
+    <div class="coolors__list" role="radiogroup" aria-label="Nuanciers">
+      {themes.map((theme) => (
+        <button
+          type="button"
+          class="palette"
+          role="radio"
+          aria-checked={theme.id === defaultTheme ? 'true' : 'false'}
+          data-theme-id={theme.id}
+        >
+          <span class="palette__top">
+            <span class="palette__name">{theme.name}</span>
+            <span class="palette__state" aria-hidden="true">Actif</span>
+          </span>
+          <span class="palette__desc">{theme.description}</span>
+          <span class="palette__swatches">
+            {(Object.keys(tokenRoles) as Token[]).map((k) => (
+              <span class="swatch">
+                <span class="swatch__chip" style={`background:${theme.tokens[k]}`}></span>
+                <span class="swatch__role">{tokenRoles[k]}</span>
+                <code class="swatch__hex">{theme.tokens[k].toUpperCase()}</code>
+              </span>
+            ))}
+          </span>
+          <span class="palette__checks">
+            {checks.map((c) => {
+              const r = contrast(theme.tokens[c.fg], theme.tokens[c.bg]);
+              return (
+                <span class={`check ${r < 4.5 ? 'is-weak' : ''}`}>
+                  <span class="check__demo" style={`color:${theme.tokens[c.fg]};background:${theme.tokens[c.bg]}`}>Aa</span>
+                  {c.label} : <strong>{r.toFixed(1)}</strong> ({grade(r)})
+                </span>
+              );
+            })}
+          </span>
+        </button>
+      ))}
+    </div>
+
+    <section class="preview" aria-labelledby="preview-title">
+      <h2 id="preview-title">Aperçu avec le thème actif</h2>
+      <div class="preview__frame">
+        <div class="preview__top">
+          <span class="preview__brand">Café La Casita</span>
+          <span class="preview__dot preview__dot--a"></span>
+          <span class="preview__dot preview__dot--b"></span>
+        </div>
+        <div class="preview__body">
+          <p class="pill">De la Colombie à la Suisse</p>
+          <h3 class="preview__title">Un café, <em>une origine</em></h3>
+          <p>
+            Texte courant sur le fond du site, avec un <a class="link link--strong" href="#preview-title">lien fort</a>
+            et un <a class="link" href="#preview-title">lien simple</a>.
+          </p>
+          <p class="preview__row">
+            <a class="btn btn--big" href="#preview-title">Acheter</a>
+            <a class="btn" href="#preview-title">Bouton</a>
+            <a class="btn btn--ghost" href="#preview-title">Secondaire</a>
+          </p>
+          <p class="preview__row">
+            <a class="chip-btn" href="#preview-title">Cauca</a>
+            <span class="pill pill--small">Nouveau</span>
+            <span class="badge badge--soldout">Épuisé</span>
+          </p>
+          <div class="preview__map" aria-hidden="true">
+            <span class="preview__land preview__land--co"></span>
+            <span class="preview__land preview__land--ch"></span>
+            <span class="preview__land"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script is:inline define:vars={{ themeColors, defaultTheme }}>
+  const root = document.documentElement;
+  const cards = [...document.querySelectorAll('[data-theme-id]')];
+
+  const apply = (id) => {
+    if (id === defaultTheme) delete root.dataset.theme;
+    else root.dataset.theme = id;
+    try {
+      if (id === defaultTheme) localStorage.removeItem('theme');
+      else localStorage.setItem('theme', id);
+    } catch {}
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColors[id]);
+    cards.forEach((c) => c.setAttribute('aria-checked', String(c.dataset.themeId === id)));
+  };
+
+  cards.forEach((c) => c.addEventListener('click', () => apply(c.dataset.themeId)));
+  document.querySelector('[data-reset]')?.addEventListener('click', () => apply(defaultTheme));
+  apply(root.dataset.theme && themeColors[root.dataset.theme] ? root.dataset.theme : defaultTheme);
+</script>
+
+<style>
+  .coolors { padding-block: clamp(2rem, 5vw, 4rem); display: grid; gap: clamp(2rem, 4vw, 3rem); }
+  .coolors__head { max-width: 60ch; }
+  .coolors__head .display { margin-top: 0.4em; }
+  .coolors__actions { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+  .coolors__actions button { font: inherit; font-weight: 800; cursor: pointer; }
+
+  .coolors__list { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
+
+  .palette {
+    display: grid; gap: 0.9rem; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+    padding: 1.2rem; border: var(--border); border-radius: var(--radius); background: var(--white);
+    box-shadow: 4px 4px 0 var(--ink); transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  }
+  .palette:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+  .palette[aria-checked='true'] { box-shadow: var(--shadow) var(--red); outline: 3px solid var(--red); outline-offset: 3px; }
+  .palette__top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+  .palette__name { font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; line-height: 1.1; }
+  .palette__state {
+    visibility: hidden; padding: 0.15em 0.7em; border-radius: 999px; background: var(--red); color: var(--white);
+    font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .palette[aria-checked='true'] .palette__state { visibility: visible; }
+  .palette__desc { font-size: 0.9rem; }
+
+  .palette__swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr)); gap: 0.6rem; }
+  .swatch { display: grid; gap: 0.15rem; font-size: 0.72rem; line-height: 1.25; }
+  .swatch__chip { height: 2.6rem; border-radius: 8px; border: 2px solid var(--ink); }
+  .swatch__role { font-weight: 700; }
+  .swatch__hex { opacity: 0.75; }
+
+  .palette__checks { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.8rem; }
+  .check { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .check.is-weak strong { color: var(--red); }
+  .check__demo { display: inline-grid; place-items: center; width: 1.9rem; height: 1.4rem; border-radius: 4px; border: 1px solid var(--ink); font-weight: 800; }
+
+  .preview__frame { border: var(--border); border-radius: var(--radius); overflow: hidden; background: var(--paper); box-shadow: var(--shadow) var(--blue); }
+  .preview__top { position: relative; overflow: hidden; display: flex; align-items: center; min-height: 4.5rem; padding: 1rem 1.2rem; background: var(--yellow); border-bottom: var(--border); }
+  .preview__brand { position: relative; z-index: 1; font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: 1.2rem; }
+  .preview__dot { position: absolute; border-radius: 50%; border: var(--border); }
+  .preview__dot--a { width: 9rem; height: 9rem; right: -2.5rem; top: 1.5rem; background: var(--pink); }
+  .preview__dot--b { width: 4rem; height: 4rem; right: 7rem; bottom: -2.4rem; background: var(--turquoise); }
+  .preview__body { padding: clamp(1rem, 3vw, 2rem); }
+  .preview__title { font-size: clamp(1.8rem, 4vw, 2.6rem); text-transform: uppercase; margin-top: 0.6em; }
+  .preview__title em { font-style: normal; color: var(--red); text-shadow: 0.05em 0.05em 0 var(--blue); }
+  .preview__row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem; }
+  .preview__map {
+    display: flex; gap: 0.8rem; padding: 1rem; margin-top: 1rem; border: var(--border); border-radius: 14px; background: var(--blue);
+  }
+  .preview__land { flex: 1; height: 3rem; border-radius: 40% 60% 50% 45%; background: var(--land); border: 2px solid var(--ink); }
+  .preview__land--co { background: var(--green); }
+  .preview__land--ch { background: var(--red); flex: 0.4; }
+</style>

@@ -3,6 +3,7 @@ import '@fontsource-variable/bricolage-grotesque';
 import '../styles/global.css';
 import { langs, type Lang } from '../i18n/ui';
 import { withBase } from '../lib/paths';
+import { themeCss, themeColors, defaultTheme } from '../data/themes';
 
 interface Props {
   lang: Lang;
@@ -29,8 +30,19 @@ const canonical = new URL(withBase(`/${lang}/`), Astro.site);
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content={{ fr: 'fr_FR', en: 'en_GB', es: 'es_ES' }[lang]} />
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
-    <meta name="theme-color" content="#FFC800" />
-    <script is:inline>document.documentElement.classList.add('js');</script>
+    <meta name="theme-color" content={themeColors[defaultTheme]} />
+    <style is:inline set:html={themeCss}></style>
+    <script is:inline define:vars={{ themeColors }}>
+      document.documentElement.classList.add('js');
+      // Nuancier choisi sur /coolors (appliqué avant le rendu pour éviter un flash)
+      try {
+        const theme = localStorage.getItem('theme');
+        if (theme && themeColors[theme]) {
+          document.documentElement.dataset.theme = theme;
+          document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColors[theme]);
+        }
+      } catch {}
+    </script>
     <slot name="head" />
   </head>
   <body>

@@ -169,8 +169,8 @@ a { color: inherit; }
 .map__world { position: relative; width: 100%; }
 .map__svg { display: block; width: 100%; height: 100%; }
 .map__ocean { fill: var(--blue); }
-.map__graticule { fill: none; stroke: #2a56c0; stroke-width: 0.5; opacity: 0.6; }
-.map__country { fill: #d9cfb8; stroke: var(--blue); stroke-width: 0.5; opacity: 0.55; }
+.map__graticule { fill: none; stroke: color-mix(in srgb, var(--blue) 70%, white); stroke-width: 0.5; opacity: 0.6; }
+.map__country { fill: color-mix(in srgb, var(--land) 85%, var(--ink)); stroke: var(--blue); stroke-width: 0.5; opacity: 0.55; }
 .map__country.is-co { fill: var(--green); stroke: var(--ink); stroke-width: 1; opacity: 1; }
 .map__country.is-ch { fill: var(--red); stroke: var(--ink); stroke-width: 1; opacity: 1; }
 .map__leaders path { fill: none; stroke: var(--yellow); stroke-width: 1.5; stroke-dasharray: 2 4; stroke-linecap: round; }
@@ -189,10 +189,10 @@ a { color: inherit; }
 .inset__view { position: relative; overflow: hidden; }
 .inset__stage { position: relative; width: 100%; transform-origin: 0 0; transition: transform var(--zoom-duration) var(--ease); will-change: transform; }
 .inset__svg { display: block; width: 100%; height: 100%; overflow: hidden; }
-.inset__view { background: #cfe0f3; } /* mer */
-.inset__neighbours path { fill: #e2e1dc; stroke: #b9b8b0; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.inset__view { background: color-mix(in srgb, var(--blue) 20%, white); } /* mer */
+.inset__neighbours path { fill: color-mix(in srgb, var(--paper) 85%, var(--ink)); stroke: color-mix(in srgb, var(--paper) 65%, var(--ink)); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .inset__outline { fill: var(--ink); stroke: var(--ink); stroke-width: 4; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.inset__departments path { fill: var(--land); stroke: #c9bc9c; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.inset__departments path { fill: var(--land); stroke: color-mix(in srgb, var(--land) 75%, var(--ink)); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .inset__country { fill: var(--land); stroke: var(--ink); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 
 /* Consigne posée en bas de la loupe Colombie, jusqu'au premier choix */
@@ -211,7 +211,7 @@ html:not(.js) .inset__cue { display: none; }
   fill: var(--green); stroke: var(--ink); stroke-width: 1.5; vector-effect: non-scaling-stroke;
   cursor: pointer; transition: fill 0.2s, opacity 0.3s;
 }
-.region:hover path, .region.is-hover path, .region:focus-visible path { fill: #00804f; }
+.region:hover path, .region.is-hover path, .region:focus-visible path { fill: color-mix(in srgb, var(--green) 78%, black); }
 /* Une seule pulsation à l'arrivée pour montrer que les régions se cliquent (coupée si mouvement réduit) */
 .is-ready:not(.has-explored) .region path { animation: region-pulse 1.4s var(--ease) 0.6s 2; }
 @keyframes region-pulse { 50% { fill: var(--yellow); } }
@@ -426,7 +426,7 @@ html:not(.js) .sheet__bar { display: none; }
   transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
 }
 .region-item:has(.region-cafe:hover, .region-cafe:focus-visible) { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
-.region-item.is-soldout { --leaf: var(--soldout); --cherry: #c4c7d2; }
+.region-item.is-soldout { --leaf: var(--soldout); --cherry: color-mix(in srgb, var(--soldout) 55%, white); }
 .region-item__buy {
   display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; flex-wrap: wrap;
   padding: 0.55rem 0.8rem; border-top: 2px dashed var(--ink); background: var(--white);
